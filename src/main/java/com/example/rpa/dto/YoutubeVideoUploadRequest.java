@@ -1,6 +1,6 @@
-package com.example.rpa.controller;
+package com.example.rpa.dto;
 
-public class VideoUploadRequest {
+public class YoutubeVideoUploadRequest {
     private String filePath;
     private String title;
     private String description;

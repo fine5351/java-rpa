@@ -1,5 +1,6 @@
 package com.example.rpa.controller;
 
+import com.example.rpa.dto.YoutubeVideoUploadRequest;
 import com.example.rpa.service.YouTubeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +16,8 @@ public class UploadController {
     private YouTubeService youTubeService;
 
     @PostMapping("/youtube/upload")
-    public String upload(@org.springframework.web.bind.annotation.RequestBody VideoUploadRequest request) {
+    public String uploadToYoutube(
+            @org.springframework.web.bind.annotation.RequestBody YoutubeVideoUploadRequest request) {
 
         // Run in a separate thread to not block the HTTP response
         new Thread(() -> {

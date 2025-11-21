@@ -18,6 +18,42 @@ import java.util.Collections;
 public class YouTubeService {
 
     public void uploadVideo(String filePath, String title, String description, String playlist, String visibility) {
+        // Auto-append hashtags based on title
+        if (title != null) {
+            if (description == null) {
+                description = "";
+            }
+            // Genshin
+            if (title.contains("深境螺旋"))
+                description += " #深境螺旋";
+            if (title.contains("幻想真境劇詩"))
+                description += " #幻想真境劇詩";
+
+            // Star Rail
+            if (title.contains("虛構敘事"))
+                description += " #虛構敘事";
+            if (title.contains("忘卻之庭"))
+                description += " #忘卻之庭";
+            if (title.contains("末日幻影"))
+                description += " #末日幻影";
+
+            // ZZZ
+            if (title.contains("式輿防衛戰"))
+                description += " #式輿防衛戰";
+            if (title.contains("零號空洞"))
+                description += " #零號空洞";
+
+            // Wuthering Waves / Others
+            if (title.contains("幽境危戰"))
+                description += " #幽境危戰";
+            if (title.contains("異相仲裁"))
+                description += " #異相仲裁";
+            if (title.contains("擬真鏖戰試煉"))
+                description += " #擬真鏖戰試煉";
+            if (title.contains("危局強襲戰"))
+                description += " #危局強襲戰";
+        }
+
         // Setup WebDriver
         WebDriverManager.chromedriver().setup();
 
