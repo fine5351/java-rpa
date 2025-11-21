@@ -1,0 +1,23 @@
+###
+POST http://localhost:8080/api/youtube/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-11-21 21-40-39.mp4",
+  "title": "2025-11-21-式輿防衛戰",
+  "description": "練度展示於結尾 \r\n #絕區零 #ZenlessZoneZero #式輿防衛戰",
+  "playlist": "絕區零-高難",
+  "visibility": "PUBLIC"
+}
+
+###
+POST http://localhost:8080/api/youtube/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-11-21 21-40-39.mp4",
+  "title": "2025-11-21-式輿防衛戰",
+  "description": "練度展示於結尾 \r\n #絕區零 #ZenlessZoneZero #式輿防衛戰",
+  "playlist": "絕區零-高難",
+  "visibility": "PUBLIC"
+}
