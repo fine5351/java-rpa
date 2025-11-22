@@ -71,4 +71,23 @@ public class UploadController {
         return "Xiaohongshu Upload started! Check the browser window.";
     }
 
+    @Autowired
+    private com.example.rpa.service.BilibiliService bilibiliService;
+
+    @PostMapping("/bilibili/upload")
+    public String uploadToBilibili(
+            @org.springframework.web.bind.annotation.RequestBody com.example.rpa.dto.BilibiliVideoUploadRequest request) {
+
+        new Thread(() -> {
+            bilibiliService.uploadVideo(
+                    request.getFilePath(),
+                    request.getTitle(),
+                    request.getDescription(),
+                    request.getVisibility(),
+                    request.getHashtags());
+        }).start();
+
+        return "Bilibili Upload started! Check the browser window.";
+    }
+
 }
