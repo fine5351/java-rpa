@@ -18,7 +18,18 @@ import java.util.Collections;
 @Service
 public class TikTokService {
 
-    public void uploadVideo(String filePath, String caption, String visibility) {
+    public void uploadVideo(String filePath, String title, String description, String visibility) {
+        // Combine title and description for TikTok caption
+        String caption = "";
+        if (title != null && !title.isEmpty()) {
+            caption += title;
+        }
+        if (description != null && !description.isEmpty()) {
+            if (!caption.isEmpty()) {
+                caption += "\n\n";
+            }
+            caption += description;
+        }
         // Setup WebDriver
         WebDriverManager.chromedriver().setup();
 

@@ -42,7 +42,8 @@ public class UploadController {
         new Thread(() -> {
             tikTokService.uploadVideo(
                     request.getFilePath(),
-                    request.getCaption(),
+                    request.getTitle(),
+                    request.getDescription(),
                     request.getVisibility());
         }).start();
 
