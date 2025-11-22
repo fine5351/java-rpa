@@ -31,4 +31,21 @@ public class UploadController {
 
         return "Upload started! Check the browser window.";
     }
+
+    @Autowired
+    private com.example.rpa.service.TikTokService tikTokService;
+
+    @PostMapping("/tiktok/upload")
+    public String uploadToTikTok(
+            @org.springframework.web.bind.annotation.RequestBody com.example.rpa.dto.TikTokVideoUploadRequest request) {
+
+        new Thread(() -> {
+            tikTokService.uploadVideo(
+                    request.getFilePath(),
+                    request.getCaption(),
+                    request.getVisibility());
+        }).start();
+
+        return "TikTok Upload started! Check the browser window.";
+    }
 }
