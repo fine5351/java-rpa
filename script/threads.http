@@ -1,0 +1,10 @@
+### Threads Post Example
+POST http://localhost:8080/api/threads/post
+Content-Type: application/json
+
+{
+    "videoUrl": "https://youtu.be/w9XLCczIWVk",
+    "title": "2025-11-21-式輿防衛戰",
+    "description": "練度展示於結尾",
+    "topic": "絕區零"
+}

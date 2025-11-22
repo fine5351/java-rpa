@@ -70,4 +70,5 @@ public class UploadController {
 
         return "Xiaohongshu Upload started! Check the browser window.";
     }
+
 }
