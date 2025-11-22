@@ -17,7 +17,8 @@ import java.util.Collections;
 @Service
 public class YouTubeService {
 
-    public void uploadVideo(String filePath, String title, String description, String playlist, String visibility) {
+    public void uploadVideo(String filePath, String title, String description, String playlist, String visibility,
+            java.util.List<String> hashtags) {
         // Auto-append hashtags based on title
         if (title != null) {
             if (description == null) {
@@ -52,6 +53,17 @@ public class YouTubeService {
                 description += " #擬真鏖戰試煉";
             if (title.contains("危局強襲戰"))
                 description += " #危局強襲戰";
+        }
+
+        // Append explicit hashtags
+        if (hashtags != null && !hashtags.isEmpty()) {
+            if (description == null)
+                description = "";
+            for (String tag : hashtags) {
+                if (!description.contains(tag)) {
+                    description += " " + tag;
+                }
+            }
         }
 
         // Setup WebDriver

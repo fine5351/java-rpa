@@ -18,7 +18,8 @@ import java.util.Collections;
 @Service
 public class TikTokService {
 
-    public void uploadVideo(String filePath, String title, String description, String visibility) {
+    public void uploadVideo(String filePath, String title, String description, String visibility,
+            java.util.List<String> hashtags) {
         // Combine title and description for TikTok caption
         String caption = "";
         if (title != null && !title.isEmpty()) {
@@ -29,6 +30,15 @@ public class TikTokService {
                 caption += "\n\n";
             }
             caption += description;
+        }
+
+        // Append explicit hashtags
+        if (hashtags != null && !hashtags.isEmpty()) {
+            if (!caption.isEmpty())
+                caption += "\n\n";
+            for (String tag : hashtags) {
+                caption += " " + tag;
+            }
         }
         // Setup WebDriver
         WebDriverManager.chromedriver().setup();

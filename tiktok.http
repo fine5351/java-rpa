@@ -5,6 +5,7 @@ Content-Type: application/json
 {
   "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-11-21 21-40-39.mp4",
   "title": "2025-11-21-式輿防衛戰",
-  "description": "練度展示於結尾\r\n\r\n#絕區零 #ZenlessZoneZero ",
-  "visibility": "PUBLIC"
+  "description": "練度展示於結尾",
+  "visibility": "PUBLIC",
+  "hashtags": ["#絕區零", "#ZenlessZoneZero"]
 }

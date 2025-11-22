@@ -21,7 +21,8 @@ import com.github.houbb.opencc4j.util.ZhConverterUtil;
 @Service
 public class XiaohongshuService {
 
-    public void uploadVideo(String filePath, String title, String description, String visibility) {
+    public void uploadVideo(String filePath, String title, String description, String visibility,
+            java.util.List<String> hashtags) {
         // 0. Auto-tagging and Chinese Conversion
         if (title != null) {
             if (description == null) {
@@ -56,6 +57,17 @@ public class XiaohongshuService {
                 description += " #擬真鏖戰試煉";
             if (title.contains("危局強襲戰"))
                 description += " #危局強襲戰";
+        }
+
+        // Append explicit hashtags
+        if (hashtags != null && !hashtags.isEmpty()) {
+            if (description == null)
+                description = "";
+            for (String tag : hashtags) {
+                if (!description.contains(tag)) {
+                    description += " " + tag;
+                }
+            }
         }
 
         // Convert to Simplified Chinese

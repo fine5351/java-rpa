@@ -1,11 +1,14 @@
 package com.example.rpa.dto;
 
+import java.util.List;
+
 public class YoutubeVideoUploadRequest {
     private String filePath;
     private String title;
     private String description;
     private String playlist;
     private String visibility; // "PUBLIC", "PRIVATE", "UNLISTED"
+    private List<String> hashtags;
 
     // Getters and Setters
     public String getFilePath() {
@@ -46,5 +49,13 @@ public class YoutubeVideoUploadRequest {
 
     public void setVisibility(String visibility) {
         this.visibility = visibility;
+    }
+
+    public List<String> getHashtags() {
+        return hashtags;
+    }
+
+    public void setHashtags(List<String> hashtags) {
+        this.hashtags = hashtags;
     }
 }

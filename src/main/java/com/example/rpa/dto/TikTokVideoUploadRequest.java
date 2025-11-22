@@ -1,10 +1,13 @@
 package com.example.rpa.dto;
 
+import java.util.List;
+
 public class TikTokVideoUploadRequest {
     private String filePath;
     private String title;
     private String description;
     private String visibility; // PUBLIC, FRIENDS, PRIVATE
+    private List<String> hashtags;
 
     public String getFilePath() {
         return filePath;
@@ -36,5 +39,13 @@ public class TikTokVideoUploadRequest {
 
     public void setVisibility(String visibility) {
         this.visibility = visibility;
+    }
+
+    public List<String> getHashtags() {
+        return hashtags;
+    }
+
+    public void setHashtags(List<String> hashtags) {
+        this.hashtags = hashtags;
     }
 }

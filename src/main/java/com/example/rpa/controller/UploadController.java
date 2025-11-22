@@ -26,7 +26,8 @@ public class UploadController {
                     request.getTitle(),
                     request.getDescription(),
                     request.getPlaylist(),
-                    request.getVisibility());
+                    request.getVisibility(),
+                    request.getHashtags());
         }).start();
 
         return "Upload started! Check the browser window.";
@@ -44,7 +45,8 @@ public class UploadController {
                     request.getFilePath(),
                     request.getTitle(),
                     request.getDescription(),
-                    request.getVisibility());
+                    request.getVisibility(),
+                    request.getHashtags());
         }).start();
 
         return "TikTok Upload started! Check the browser window.";
@@ -62,7 +64,8 @@ public class UploadController {
                     request.getFilePath(),
                     request.getTitle(),
                     request.getDescription(),
-                    request.getVisibility());
+                    request.getVisibility(),
+                    request.getHashtags());
         }).start();
 
         return "Xiaohongshu Upload started! Check the browser window.";

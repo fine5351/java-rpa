@@ -7,7 +7,8 @@ Content-Type: application/json
   "title": "2025-11-21-",
   "description": "練度展示於結尾\r\n#原神 #GenshinImpact ",
   "playlist": "原神-高難",
-  "visibility": "PUBLIC"
+  "visibility": "PUBLIC",
+  "hashtags": ["#原神", "#GenshinImpact"]
 }
 
 ### 崩鐵
@@ -17,9 +18,10 @@ Content-Type: application/json
 {
   "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-11-21 21-40-39.mp4",
   "title": "2025-11-21-",
-  "description": "練度展示於結尾\r\n#崩壞星穹鐵道 #HonkaiStarRail ",
+  "description": "練度展示於結尾",
   "playlist": "崩壞:星穹鐵道-高難",
-  "visibility": "PUBLIC"
+  "visibility": "PUBLIC",
+  "hashtags": ["#崩壞星穹鐵道", "#HonkaiStarRail"]
 }
 
 ### 絕區零
@@ -29,7 +31,8 @@ Content-Type: application/json
 {
   "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-11-21 21-40-39.mp4",
   "title": "2025-11-21-式輿防衛戰",
-  "description": "練度展示於結尾\r\n#絕區零 #ZenlessZoneZero ",
+  "description": "練度展示於結尾",
   "playlist": "絕區零-高難",
-  "visibility": "PUBLIC"
+  "visibility": "PUBLIC",
+  "hashtags": ["#絕區零", "#ZenlessZoneZero"]
 }
