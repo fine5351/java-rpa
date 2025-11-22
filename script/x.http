@@ -1,0 +1,10 @@
+### Post to X (Twitter)
+POST http://localhost:8080/api/x/post
+Content-Type: application/json
+
+{
+    "videoUrl": "https://youtu.be/w9XLCczIWVk",
+    "title": "2025-11-21-式輿防衛戰",
+    "description": "練度展示於結尾",
+    "hashtags": ["#絕區零", "#ZenlessZoneZero", "#式輿防衛戰"]
+}

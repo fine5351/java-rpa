@@ -20,6 +20,9 @@ public class PostController {
     @Autowired
     private ThreadsService threadsService;
 
+    @Autowired
+    private com.example.rpa.service.XService xService;
+
     @PostMapping("/facebook/post")
     public String postToFacebook(@RequestBody FacebookPostRequest request) {
         new Thread(() -> {
@@ -44,5 +47,18 @@ public class PostController {
         }).start();
 
         return "Threads Post started! Check the browser window.";
+    }
+
+    @PostMapping("/x/post")
+    public String postToX(@RequestBody com.example.rpa.dto.XPostRequest request) {
+        new Thread(() -> {
+            xService.postLink(
+                    request.getVideoUrl(),
+                    request.getTitle(),
+                    request.getDescription(),
+                    request.getHashtags());
+        }).start();
+
+        return "X Post started! Check the browser window.";
     }
 }
