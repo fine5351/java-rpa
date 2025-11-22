@@ -48,4 +48,22 @@ public class UploadController {
 
         return "TikTok Upload started! Check the browser window.";
     }
+
+    @Autowired
+    private com.example.rpa.service.XiaohongshuService xiaohongshuService;
+
+    @PostMapping("/xiaohongshu/upload")
+    public String uploadToXiaohongshu(
+            @org.springframework.web.bind.annotation.RequestBody com.example.rpa.dto.XiaohongshuVideoUploadRequest request) {
+
+        new Thread(() -> {
+            xiaohongshuService.uploadVideo(
+                    request.getFilePath(),
+                    request.getTitle(),
+                    request.getDescription(),
+                    request.getVisibility());
+        }).start();
+
+        return "Xiaohongshu Upload started! Check the browser window.";
+    }
 }
