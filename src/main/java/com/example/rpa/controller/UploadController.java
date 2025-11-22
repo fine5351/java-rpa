@@ -90,4 +90,23 @@ public class UploadController {
         return "Bilibili Upload started! Check the browser window.";
     }
 
+    @Autowired
+    private com.example.rpa.service.HoyolabService hoyolabService;
+
+    @PostMapping("/hoyolab/upload")
+    public String uploadToHoyolab(
+            @org.springframework.web.bind.annotation.RequestBody com.example.rpa.dto.HoyolabVideoUploadRequest request) {
+
+        new Thread(() -> {
+            hoyolabService.uploadVideo(
+                    request.getVideoLink(),
+                    request.getTitle(),
+                    request.getDescription(),
+                    request.getHashtags(),
+                    request.getCategory());
+        }).start();
+
+        return "Hoyolab Upload started! Check the browser window.";
+    }
+
 }

@@ -1,0 +1,11 @@
+### Upload to Hoyolab
+POST http://localhost:8080/api/hoyolab/upload
+Content-Type: application/json
+
+{
+    "videoLink": "https://youtu.be/w9XLCczIWVk",
+    "title": "2025-11-21-式輿防衛戰",
+    "description": "練度展示於結尾",
+    "category": "攻略與分析",
+    "hashtags": ["絕區零", "式輿防衛戰"]
+}
