@@ -1,0 +1,13 @@
+### Integrated Upload Test
+POST http://localhost:8080/api/integrated/upload
+Content-Type: application/json
+
+{
+    "filePath": "D:\\Videos\\test.mp4",
+    "title": "Test Video",
+    "description": "Test Description",
+    "hashtags": ["test", "rpa"],
+    "visibility": "PRIVATE",
+    "playlist": "Test Playlist",
+    "platforms": ["YOUTUBE", "TIKTOK"]
+}

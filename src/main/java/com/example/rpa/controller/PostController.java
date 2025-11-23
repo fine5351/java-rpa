@@ -61,4 +61,21 @@ public class PostController {
 
         return "X Post started! Check the browser window.";
     }
+
+    @Autowired
+    private com.example.rpa.service.HoyolabService hoyolabService;
+
+    @PostMapping("/hoyolab/post")
+    public String postToHoyolab(@RequestBody com.example.rpa.dto.HoyolabVideoUploadRequest request) {
+        new Thread(() -> {
+            hoyolabService.uploadVideo(
+                    request.getVideoLink(),
+                    request.getTitle(),
+                    request.getDescription(),
+                    request.getHashtags(),
+                    request.getCategory());
+        }).start();
+
+        return "Hoyolab Post started! Check the browser window.";
+    }
 }

@@ -1,5 +1,5 @@
 ### Upload to Hoyolab
-POST http://localhost:8080/api/hoyolab/upload
+POST http://localhost:8080/api/hoyolab/post
 Content-Type: application/json
 
 {

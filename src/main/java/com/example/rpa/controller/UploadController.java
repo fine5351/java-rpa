@@ -90,23 +90,55 @@ public class UploadController {
         return "Bilibili Upload started! Check the browser window.";
     }
 
-    @Autowired
-    private com.example.rpa.service.HoyolabService hoyolabService;
-
-    @PostMapping("/hoyolab/upload")
-    public String uploadToHoyolab(
-            @org.springframework.web.bind.annotation.RequestBody com.example.rpa.dto.HoyolabVideoUploadRequest request) {
-
+    @PostMapping("/integrated/upload")
+    public String uploadToIntegrated(
+            @org.springframework.web.bind.annotation.RequestBody com.example.rpa.dto.IntegratedVideoUploadRequest request) {
         new Thread(() -> {
-            hoyolabService.uploadVideo(
-                    request.getVideoLink(),
-                    request.getTitle(),
-                    request.getDescription(),
-                    request.getHashtags(),
-                    request.getCategory());
+            java.util.Set<String> platforms = request.getPlatforms();
+            if (platforms == null || platforms.isEmpty()) {
+                return;
+            }
+
+            if (platforms.contains("YOUTUBE")) {
+                youTubeService.uploadVideo(
+                        request.getFilePath(),
+                        request.getTitle(),
+                        request.getDescription(),
+                        request.getPlaylist(),
+                        request.getVisibility(),
+                        request.getHashtags());
+            }
+
+            if (platforms.contains("TIKTOK")) {
+                tikTokService.uploadVideo(
+                        request.getFilePath(),
+                        request.getTitle(),
+                        request.getDescription(),
+                        request.getVisibility(),
+                        request.getHashtags());
+            }
+
+            if (platforms.contains("XIAOHONGSHU")) {
+                xiaohongshuService.uploadVideo(
+                        request.getFilePath(),
+                        request.getTitle(),
+                        request.getDescription(),
+                        request.getVisibility(),
+                        request.getHashtags());
+            }
+
+            if (platforms.contains("BILIBILI")) {
+                bilibiliService.uploadVideo(
+                        request.getFilePath(),
+                        request.getTitle(),
+                        request.getDescription(),
+                        request.getVisibility(),
+                        request.getHashtags());
+            }
+
         }).start();
 
-        return "Hoyolab Upload started! Check the browser window.";
+        return "Integrated Upload started! Check the browser window.";
     }
 
 }
