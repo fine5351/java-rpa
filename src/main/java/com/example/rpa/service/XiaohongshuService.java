@@ -1,6 +1,8 @@
 package com.example.rpa.service;
 
+import com.github.houbb.opencc4j.util.ZhConverterUtil;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
@@ -11,12 +13,12 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
-import com.github.houbb.opencc4j.util.ZhConverterUtil;
 
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Service
 public class XiaohongshuService {
 
@@ -24,27 +26,26 @@ public class XiaohongshuService {
             "深境螺旋", "幻想真境劇詩", "虛構敘事", "忘卻之庭", "末日幻影",
             "式輿防衛戰", "零號空洞", "幽境危戰", "異相仲裁", "擬真鏖戰試煉", "危局強襲戰");
 
-    public void uploadVideo(String filePath, String title, String description, String visibility,
-            List<String> hashtags) {
-        String finalDesc = buildDescription(title, description, hashtags);
-        String simpleTitle = ZhConverterUtil.toSimple(title);
-        String simpleDesc = ZhConverterUtil.toSimple(finalDesc);
+    public void uploadVideo(String filePath, String title, String description, List<String> hashtags) {
+        String simplifiedTitle = ZhConverterUtil.toSimple(title);
+        String finalDescription = buildDescription(title, description, hashtags);
+        String simplifiedDescription = ZhConverterUtil.toSimple(finalDescription);
 
-        System.out.println("Processed Title (Simplified): " + simpleTitle);
-        System.out.println("Processed Description (Simplified): " + simpleDesc);
+        log.info("Simplified Title: {}", simplifiedTitle);
+        log.info("Simplified Description: {}", simplifiedDescription);
 
         WebDriver driver = null;
         try {
             driver = initializeDriver();
-            navigateToStudio(driver);
+            navigateToCreatorStudio(driver);
             uploadFile(driver, filePath);
-            Thread.sleep(5000); // Wait for form
-            setTitle(driver, simpleTitle);
-            setDescription(driver, simpleDesc);
-            checkVisibility(visibility);
-            clickPublishButton(driver);
+            waitForUploadComplete(driver);
+            setTitle(driver, simplifiedTitle);
+            setDescription(driver, simplifiedDescription);
+            clickPublish(driver);
+            waitForSuccess(driver);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error during Xiaohongshu upload", e);
         } finally {
             if (driver != null)
                 driver.quit();
@@ -52,21 +53,24 @@ public class XiaohongshuService {
     }
 
     private String buildDescription(String title, String description, List<String> hashtags) {
-        if (description == null)
-            description = "";
+        String desc = "";
+        if (description != null)
+            desc += description + "\n";
+
         if (title != null) {
             for (String keyword : AUTO_HASHTAG_KEYWORDS) {
                 if (title.contains(keyword))
-                    description += " #" + keyword;
+                    desc += " #" + keyword;
             }
         }
+
         if (hashtags != null) {
             for (String tag : hashtags) {
-                if (!description.contains(tag))
-                    description += " " + tag;
+                if (!desc.contains(tag))
+                    desc += " " + tag;
             }
         }
-        return description;
+        return desc.trim();
     }
 
     private WebDriver initializeDriver() {
@@ -79,128 +83,109 @@ public class XiaohongshuService {
         return new ChromeDriver(options);
     }
 
-    private void navigateToStudio(WebDriver driver) throws InterruptedException {
-        System.out.println("Navigating to Xiaohongshu Creator Studio...");
+    private void navigateToCreatorStudio(WebDriver driver) throws InterruptedException {
+        log.info("Navigating to Xiaohongshu Creator Studio...");
         driver.get("https://creator.xiaohongshu.com/publish/publish");
         Thread.sleep(5000);
     }
 
     private void uploadFile(WebDriver driver, String filePath) {
-        System.out.println("Waiting for file input...");
+        log.info("Uploading file...");
         try {
             WebElement fileInput = new WebDriverWait(driver, Duration.ofSeconds(30))
                     .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//input[@type='file']")));
             fileInput.sendKeys(filePath);
-            System.out.println("Sent file path: " + filePath);
         } catch (Exception e) {
-            System.out.println("Could not find file input immediately. Please check if login is required.");
+            log.error("File input not found.");
             throw e;
         }
     }
 
+    private void waitForUploadComplete(WebDriver driver) {
+        log.info("Waiting for upload to complete...");
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(120)).until(ExpectedConditions.presenceOfElementLocated(
+                    By.xpath("//div[contains(text(), '上传成功') or contains(text(), 'Upload success')]")));
+            log.info("Upload complete.");
+        } catch (Exception e) {
+            log.warn("Upload completion text not found, proceeding...");
+        }
+    }
+
     private void setTitle(WebDriver driver, String title) {
-        if (title == null || title.isEmpty())
-            return;
-        System.out.println("Setting title...");
+        log.info("Setting title...");
         try {
             WebElement titleInput = new WebDriverWait(driver, Duration.ofSeconds(30))
                     .until(ExpectedConditions.presenceOfElementLocated(
-                            By.xpath("//input[contains(@placeholder, '标题') or contains(@class, 'title-input')]")));
-            clearAndType(titleInput, title);
-            System.out.println("Title set.");
+                            By.xpath("//input[contains(@placeholder, '标题') or contains(@placeholder, 'Title')]")));
+            titleInput.click();
+            titleInput.sendKeys(Keys.CONTROL + "a");
+            titleInput.sendKeys(Keys.BACK_SPACE);
+            titleInput.sendKeys(title);
+            log.info("Title set.");
         } catch (Exception e) {
-            System.out.println("Could not find title input: " + e.getMessage());
+            log.warn("Could not set title: {}", e.getMessage());
         }
     }
 
     private void setDescription(WebDriver driver, String description) {
-        if (description == null || description.isEmpty())
-            return;
-        System.out.println("Setting description...");
+        log.info("Setting description...");
         try {
             WebElement descInput = new WebDriverWait(driver, Duration.ofSeconds(30))
                     .until(ExpectedConditions.presenceOfElementLocated(
-                            By.xpath(
-                                    "//div[@contenteditable='true' and not(contains(@class, 'title'))] | //textarea")));
-            clearAndType(descInput, description);
-            System.out.println("Description set.");
-        } catch (Exception e) {
-            System.out.println("Could not find description input: " + e.getMessage());
-        }
-    }
+                            By.xpath("//div[@id='post-textarea']")));
+            descInput.click();
 
-    private void clearAndType(WebElement element, String text) {
-        element.click();
-        element.sendKeys(Keys.CONTROL + "a");
-        element.sendKeys(Keys.BACK_SPACE);
-        element.sendKeys(text);
-    }
-
-    private void checkVisibility(String visibility) {
-        if ("PRIVATE".equalsIgnoreCase(visibility)) {
-            System.out.println("Private visibility requested but not yet implemented for Xiaohongshu.");
-        }
-    }
-
-    private void clickPublishButton(WebDriver driver) throws Exception {
-        System.out.println("Waiting for upload to complete and Publish button to be ready...");
-        WebElement publishButton = waitForPublishButton(driver);
-
-        if (publishButton != null) {
-            JavascriptExecutor js = (JavascriptExecutor) driver;
-            js.executeScript("arguments[0].scrollIntoView({block: 'center'});", publishButton);
-            Thread.sleep(1000);
-            try {
-                publishButton.click();
-                System.out.println("Clicked Publish button.");
-            } catch (Exception e) {
-                js.executeScript("arguments[0].click();", publishButton);
-                System.out.println("Clicked Publish button (JS).");
-            }
-            waitForSuccess(driver);
-        } else {
-            throw new RuntimeException("Publish button never became enabled.");
-        }
-        System.out.println("Xiaohongshu upload sequence finished.");
-        Thread.sleep(10000);
-    }
-
-    private WebElement waitForPublishButton(WebDriver driver) throws InterruptedException {
-        for (int i = 0; i < 300; i++) {
-            try {
-                WebElement btn = driver.findElement(By.xpath("//button[contains(., '发布')]"));
-                if (isButtonEnabled(btn)) {
-                    System.out.println("Publish button is enabled.");
-                    return btn;
+            // Split description by spaces to handle hashtags
+            String[] parts = description.split(" ");
+            for (String part : parts) {
+                descInput.sendKeys(part);
+                descInput.sendKeys(" ");
+                if (part.startsWith("#")) {
+                    try {
+                        Thread.sleep(1000); // Wait for suggestion
+                        WebElement suggestion = new WebDriverWait(driver, Duration.ofSeconds(2))
+                                .until(ExpectedConditions.presenceOfElementLocated(
+                                        By.xpath("//li[contains(@class, 'topic-item')]")));
+                        suggestion.click();
+                    } catch (Exception ignored) {
+                        // No suggestion or timeout, just continue
+                    }
                 }
-                if (i % 5 == 0)
-                    System.out.println("Waiting for publish button to be enabled...");
-            } catch (Exception ignored) {
             }
-            Thread.sleep(1000);
-        }
-        return null;
-    }
-
-    private boolean isButtonEnabled(WebElement btn) {
-        String disabled = btn.getAttribute("disabled");
-        String cls = btn.getAttribute("class");
-        return (disabled == null || !"true".equals(disabled)) &&
-                (cls == null || !cls.contains("disabled"));
-    }
-
-    private void waitForSuccess(WebDriver driver) throws InterruptedException {
-        System.out.println("Waiting for success confirmation...");
-        Thread.sleep(5000);
-        try {
-            WebElement msg = new WebDriverWait(driver, Duration.ofSeconds(10))
-                    .until(ExpectedConditions.presenceOfElementLocated(
-                            By.xpath("""
-                                    //*[contains(text(), '发布成功') or contains(text(), 'Submitted')]
-                                    """)));
-            System.out.println("Success detected: " + msg.getText());
+            log.info("Description set.");
         } catch (Exception e) {
-            System.out.println("Success message not explicitly found, but flow finished.");
+            log.warn("Could not set description: {}", e.getMessage());
+        }
+    }
+
+    private void clickPublish(WebDriver driver) {
+        log.info("Clicking Publish...");
+        try {
+            WebElement publishBtn = new WebDriverWait(driver, Duration.ofSeconds(30))
+                    .until(ExpectedConditions.elementToBeClickable(
+                            By.xpath("//button[contains(text(), '发布') or contains(text(), 'Publish')]")));
+
+            // Scroll to view
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", publishBtn);
+            Thread.sleep(1000);
+
+            publishBtn.click();
+            log.info("Clicked Publish.");
+        } catch (Exception e) {
+            log.warn("Could not click Publish: {}", e.getMessage());
+        }
+    }
+
+    private void waitForSuccess(WebDriver driver) {
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.presenceOfElementLocated(
+                    By.xpath("""
+                            //div[contains(text(), '发布成功') or contains(text(), 'Publish success')]
+                            """)));
+            log.info("Success indicator found.");
+        } catch (Exception e) {
+            log.info("Proceeding without specific success text.");
         }
     }
 }

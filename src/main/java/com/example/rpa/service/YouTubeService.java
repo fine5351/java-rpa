@@ -1,6 +1,7 @@
 package com.example.rpa.service;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
@@ -16,6 +17,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Service
 public class YouTubeService {
 
@@ -64,7 +66,7 @@ public class YouTubeService {
             setVisibility(driver, visibility);
             saveAndClose(driver);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error during YouTube upload", e);
         } finally {
             if (driver != null)
                 driver.quit();
@@ -124,7 +126,7 @@ public class YouTubeService {
             Thread.sleep(500);
             uploadButton = adjustButtonTarget(uploadButton);
             dispatchClickEvents(js, uploadButton);
-            System.out.println("Dispatched click events to Upload button.");
+            log.info("Dispatched click events to Upload button.");
             Thread.sleep(2000);
         } else {
             throw new RuntimeException("Could not find any Upload/Create button.");
@@ -204,11 +206,11 @@ public class YouTubeService {
     }
 
     private void uploadFile(WebDriver driver, String filePath) {
-        System.out.println("Waiting for file input...");
+        log.info("Waiting for file input...");
         WebElement fileInput = new WebDriverWait(driver, Duration.ofSeconds(20))
                 .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//input[@type='file']")));
         fileInput.sendKeys(filePath);
-        System.out.println("Sent file path: " + filePath);
+        log.info("Sent file path: {}", filePath);
     }
 
     private void enterTitleAndDescription(WebDriver driver, String title, String description) {
@@ -218,16 +220,16 @@ public class YouTubeService {
                 WebElement titleBox = wait.until(ExpectedConditions.presenceOfElementLocated(
                         By.xpath("//ytcp-social-suggestions-textbox[@id='title-textarea']//div[@id='textbox']")));
                 setText(titleBox, title);
-                System.out.println("Set title: " + title);
+                log.info("Set title: {}", title);
             }
             if (description != null && !description.isEmpty()) {
                 WebElement descBox = wait.until(ExpectedConditions.presenceOfElementLocated(
                         By.xpath("//ytcp-social-suggestions-textbox[@id='description-textarea']//div[@id='textbox']")));
                 setText(descBox, description);
-                System.out.println("Set description.");
+                log.info("Set description.");
             }
         } catch (Exception e) {
-            System.out.println("Error setting metadata: " + e.getMessage());
+            log.error("Error setting metadata: {}", e.getMessage());
         }
     }
 
@@ -257,7 +259,7 @@ public class YouTubeService {
             doneBtn.click();
             Thread.sleep(1000);
         } catch (Exception e) {
-            System.out.println("Could not find playlist: " + playlist);
+            log.warn("Could not find playlist: {}", playlist);
         }
     }
 
@@ -288,12 +290,12 @@ public class YouTubeService {
     private void saveAndClose(WebDriver driver) throws InterruptedException {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         wait.until(ExpectedConditions.elementToBeClickable(By.id("done-button"))).click();
-        System.out.println("Clicked Done button.");
+        log.info("Clicked Done button.");
         try {
             wait.until(ExpectedConditions.elementToBeClickable(By.id("close-button"))).click();
         } catch (Exception ignored) {
         }
-        System.out.println("Video uploaded successfully! Waiting 60s...");
+        log.info("Video uploaded successfully! Waiting 60s...");
         Thread.sleep(60000);
     }
 

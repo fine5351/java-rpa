@@ -2,17 +2,24 @@ package com.example.rpa.controller;
 
 import com.example.rpa.dto.FacebookPostRequest;
 import com.example.rpa.dto.ThreadsPostRequest;
+import com.example.rpa.dto.XPostRequest;
 import com.example.rpa.service.FacebookService;
 import com.example.rpa.service.ThreadsService;
+import com.example.rpa.service.XService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/post")
 public class PostController {
+
+    @Autowired
+    private XService xService;
 
     @Autowired
     private FacebookService facebookService;
@@ -20,62 +27,39 @@ public class PostController {
     @Autowired
     private ThreadsService threadsService;
 
-    @Autowired
-    private com.example.rpa.service.XService xService;
+    @PostMapping("/x")
+    public String postToX(@RequestBody XPostRequest request) {
+        log.info("Received X post request: {}", request);
+        try {
+            xService.postLink(request.getContent(), request.getHashtags());
+            return "Posted to X successfully!";
+        } catch (Exception e) {
+            log.error("Failed to post to X", e);
+            return "Failed to post to X: " + e.getMessage();
+        }
+    }
 
-    @PostMapping("/facebook/post")
+    @PostMapping("/facebook")
     public String postToFacebook(@RequestBody FacebookPostRequest request) {
-        new Thread(() -> {
-            facebookService.postLink(
-                    request.getVideoUrl(),
-                    request.getTitle(),
-                    request.getDescription(),
-                    request.getHashtags());
-        }).start();
-
-        return "Facebook Post started! Check the browser window.";
+        log.info("Received Facebook post request: {}", request);
+        try {
+            facebookService.postLink(request.getContent(), request.getHashtags());
+            return "Posted to Facebook successfully!";
+        } catch (Exception e) {
+            log.error("Failed to post to Facebook", e);
+            return "Failed to post to Facebook: " + e.getMessage();
+        }
     }
 
-    @PostMapping("/threads/post")
+    @PostMapping("/threads")
     public String postToThreads(@RequestBody ThreadsPostRequest request) {
-        new Thread(() -> {
-            threadsService.postLink(
-                    request.getVideoUrl(),
-                    request.getTitle(),
-                    request.getDescription(),
-                    request.getTopic());
-        }).start();
-
-        return "Threads Post started! Check the browser window.";
-    }
-
-    @PostMapping("/x/post")
-    public String postToX(@RequestBody com.example.rpa.dto.XPostRequest request) {
-        new Thread(() -> {
-            xService.postLink(
-                    request.getVideoUrl(),
-                    request.getTitle(),
-                    request.getDescription(),
-                    request.getHashtags());
-        }).start();
-
-        return "X Post started! Check the browser window.";
-    }
-
-    @Autowired
-    private com.example.rpa.service.HoyolabService hoyolabService;
-
-    @PostMapping("/hoyolab/post")
-    public String postToHoyolab(@RequestBody com.example.rpa.dto.HoyolabVideoUploadRequest request) {
-        new Thread(() -> {
-            hoyolabService.uploadVideo(
-                    request.getVideoLink(),
-                    request.getTitle(),
-                    request.getDescription(),
-                    request.getHashtags(),
-                    request.getCategory());
-        }).start();
-
-        return "Hoyolab Post started! Check the browser window.";
+        log.info("Received Threads post request: {}", request);
+        try {
+            threadsService.postLink(request.getContent(), request.getHashtags());
+            return "Posted to Threads successfully!";
+        } catch (Exception e) {
+            log.error("Failed to post to Threads", e);
+            return "Failed to post to Threads: " + e.getMessage();
+        }
     }
 }

@@ -1,13 +1,24 @@
 package com.example.rpa.controller;
 
+import com.example.rpa.dto.BilibiliVideoUploadRequest;
+import com.example.rpa.dto.IntegratedVideoUploadRequest;
+import com.example.rpa.dto.TikTokVideoUploadRequest;
+import com.example.rpa.dto.XiaohongshuVideoUploadRequest;
 import com.example.rpa.dto.YoutubeVideoUploadRequest;
+import com.example.rpa.service.BilibiliService;
+import com.example.rpa.service.TikTokService;
+import com.example.rpa.service.XiaohongshuService;
 import com.example.rpa.service.YouTubeService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Set;
+
+@Slf4j
 @RestController
 @RequestMapping("/api")
 public class UploadController {
@@ -15,91 +26,20 @@ public class UploadController {
     @Autowired
     private YouTubeService youTubeService;
 
+    @Autowired
+    private TikTokService tikTokService;
+
+    @Autowired
+    private XiaohongshuService xiaohongshuService;
+
+    @Autowired
+    private BilibiliService bilibiliService;
+
     @PostMapping("/youtube/upload")
-    public String uploadToYoutube(
-            @org.springframework.web.bind.annotation.RequestBody YoutubeVideoUploadRequest request) {
-
-        // Run in a separate thread to not block the HTTP response
+    public String uploadToYoutube(@RequestBody YoutubeVideoUploadRequest request) {
+        log.info("Received YouTube upload request: {}", request);
         new Thread(() -> {
-            youTubeService.uploadVideo(
-                    request.getFilePath(),
-                    request.getTitle(),
-                    request.getDescription(),
-                    request.getPlaylist(),
-                    request.getVisibility(),
-                    request.getHashtags());
-        }).start();
-
-        return "Upload started! Check the browser window.";
-    }
-
-    @Autowired
-    private com.example.rpa.service.TikTokService tikTokService;
-
-    @PostMapping("/tiktok/upload")
-    public String uploadToTikTok(
-            @org.springframework.web.bind.annotation.RequestBody com.example.rpa.dto.TikTokVideoUploadRequest request) {
-
-        new Thread(() -> {
-            tikTokService.uploadVideo(
-                    request.getFilePath(),
-                    request.getTitle(),
-                    request.getDescription(),
-                    request.getVisibility(),
-                    request.getHashtags());
-        }).start();
-
-        return "TikTok Upload started! Check the browser window.";
-    }
-
-    @Autowired
-    private com.example.rpa.service.XiaohongshuService xiaohongshuService;
-
-    @PostMapping("/xiaohongshu/upload")
-    public String uploadToXiaohongshu(
-            @org.springframework.web.bind.annotation.RequestBody com.example.rpa.dto.XiaohongshuVideoUploadRequest request) {
-
-        new Thread(() -> {
-            xiaohongshuService.uploadVideo(
-                    request.getFilePath(),
-                    request.getTitle(),
-                    request.getDescription(),
-                    request.getVisibility(),
-                    request.getHashtags());
-        }).start();
-
-        return "Xiaohongshu Upload started! Check the browser window.";
-    }
-
-    @Autowired
-    private com.example.rpa.service.BilibiliService bilibiliService;
-
-    @PostMapping("/bilibili/upload")
-    public String uploadToBilibili(
-            @org.springframework.web.bind.annotation.RequestBody com.example.rpa.dto.BilibiliVideoUploadRequest request) {
-
-        new Thread(() -> {
-            bilibiliService.uploadVideo(
-                    request.getFilePath(),
-                    request.getTitle(),
-                    request.getDescription(),
-                    request.getVisibility(),
-                    request.getHashtags());
-        }).start();
-
-        return "Bilibili Upload started! Check the browser window.";
-    }
-
-    @PostMapping("/integrated/upload")
-    public String uploadToIntegrated(
-            @org.springframework.web.bind.annotation.RequestBody com.example.rpa.dto.IntegratedVideoUploadRequest request) {
-        new Thread(() -> {
-            java.util.Set<String> platforms = request.getPlatforms();
-            if (platforms == null || platforms.isEmpty()) {
-                return;
-            }
-
-            if (platforms.contains("YOUTUBE")) {
+            try {
                 youTubeService.uploadVideo(
                         request.getFilePath(),
                         request.getTitle(),
@@ -107,33 +47,128 @@ public class UploadController {
                         request.getPlaylist(),
                         request.getVisibility(),
                         request.getHashtags());
+            } catch (Exception e) {
+                log.error("Error uploading to YouTube", e);
             }
+        }).start();
 
-            if (platforms.contains("TIKTOK")) {
+        return "Upload started! Check the browser window.";
+    }
+
+    @PostMapping("/tiktok/upload")
+    public String uploadToTikTok(@RequestBody TikTokVideoUploadRequest request) {
+        log.info("Received TikTok upload request: {}", request);
+        new Thread(() -> {
+            try {
                 tikTokService.uploadVideo(
                         request.getFilePath(),
                         request.getTitle(),
                         request.getDescription(),
                         request.getVisibility(),
                         request.getHashtags());
+            } catch (Exception e) {
+                log.error("Error uploading to TikTok", e);
             }
+        }).start();
 
-            if (platforms.contains("XIAOHONGSHU")) {
+        return "TikTok Upload started! Check the browser window.";
+    }
+
+    @PostMapping("/xiaohongshu/upload")
+    public String uploadToXiaohongshu(@RequestBody XiaohongshuVideoUploadRequest request) {
+        log.info("Received Xiaohongshu upload request: {}", request);
+        new Thread(() -> {
+            try {
                 xiaohongshuService.uploadVideo(
                         request.getFilePath(),
                         request.getTitle(),
                         request.getDescription(),
-                        request.getVisibility(),
                         request.getHashtags());
+            } catch (Exception e) {
+                log.error("Error uploading to Xiaohongshu", e);
             }
+        }).start();
 
-            if (platforms.contains("BILIBILI")) {
+        return "Xiaohongshu Upload started! Check the browser window.";
+    }
+
+    @PostMapping("/bilibili/upload")
+    public String uploadToBilibili(@RequestBody BilibiliVideoUploadRequest request) {
+        log.info("Received Bilibili upload request: {}", request);
+        new Thread(() -> {
+            try {
                 bilibiliService.uploadVideo(
                         request.getFilePath(),
                         request.getTitle(),
                         request.getDescription(),
-                        request.getVisibility(),
                         request.getHashtags());
+            } catch (Exception e) {
+                log.error("Error uploading to Bilibili", e);
+            }
+        }).start();
+
+        return "Bilibili Upload started! Check the browser window.";
+    }
+
+    @PostMapping("/integrated/upload")
+    public String uploadToIntegrated(@RequestBody IntegratedVideoUploadRequest request) {
+        log.info("Received Integrated upload request: {}", request);
+        new Thread(() -> {
+            Set<String> platforms = request.getPlatforms();
+            if (platforms == null || platforms.isEmpty()) {
+                log.warn("No platforms specified for integrated upload.");
+                return;
+            }
+
+            if (platforms.contains("YOUTUBE")) {
+                try {
+                    youTubeService.uploadVideo(
+                            request.getFilePath(),
+                            request.getTitle(),
+                            request.getDescription(),
+                            request.getPlaylist(),
+                            request.getVisibility(),
+                            request.getHashtags());
+                } catch (Exception e) {
+                    log.error("Error uploading to YouTube (Integrated)", e);
+                }
+            }
+
+            if (platforms.contains("TIKTOK")) {
+                try {
+                    tikTokService.uploadVideo(
+                            request.getFilePath(),
+                            request.getTitle(),
+                            request.getDescription(),
+                            request.getVisibility(),
+                            request.getHashtags());
+                } catch (Exception e) {
+                    log.error("Error uploading to TikTok (Integrated)", e);
+                }
+            }
+
+            if (platforms.contains("XIAOHONGSHU")) {
+                try {
+                    xiaohongshuService.uploadVideo(
+                            request.getFilePath(),
+                            request.getTitle(),
+                            request.getDescription(),
+                            request.getHashtags());
+                } catch (Exception e) {
+                    log.error("Error uploading to Xiaohongshu (Integrated)", e);
+                }
+            }
+
+            if (platforms.contains("BILIBILI")) {
+                try {
+                    bilibiliService.uploadVideo(
+                            request.getFilePath(),
+                            request.getTitle(),
+                            request.getDescription(),
+                            request.getHashtags());
+                } catch (Exception e) {
+                    log.error("Error uploading to Bilibili (Integrated)", e);
+                }
             }
 
         }).start();

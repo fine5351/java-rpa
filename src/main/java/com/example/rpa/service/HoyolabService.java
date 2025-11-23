@@ -1,6 +1,7 @@
 package com.example.rpa.service;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
@@ -17,28 +18,28 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Service
 public class HoyolabService {
 
-    public void uploadVideo(String videoLink, String title, String description, List<String> hashtags,
-            String category) {
-        System.out.println("Title: " + title);
-        System.out.println("Description: " + description);
-        System.out.println("Video Link: " + videoLink);
-
+    public void uploadVideo(String videoUrl, String title, String description, String circleName, String categoryName,
+            List<String> topics) {
+        log.info("Starting Hoyolab upload for video: {}", videoUrl);
         WebDriver driver = null;
         try {
             driver = initializeDriver();
             navigateToPostPage(driver);
-            enterVideoLink(driver, videoLink);
-            setDescription(driver, description);
-            setCircle(driver, hashtags);
-            setCategory(driver, category);
-            setTopics(driver, hashtags);
-            setCopyright(driver);
-            clickPublishButton(driver);
+            enterVideoLink(driver, videoUrl);
+            enterTitle(driver, title);
+            enterDescription(driver, description);
+            selectCircle(driver, circleName);
+            selectCategory(driver, categoryName);
+            selectTopics(driver, topics);
+            selectCopyright(driver);
+            clickPublish(driver);
+            waitForSuccess(driver);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error during Hoyolab upload", e);
         } finally {
             if (driver != null)
                 driver.quit();
@@ -56,191 +57,183 @@ public class HoyolabService {
     }
 
     private void navigateToPostPage(WebDriver driver) throws InterruptedException {
-        System.out.println("Navigating to Hoyolab Post Link Page...");
-        driver.get("https://www.hoyolab.com/newArticle/5?subType=link");
+        log.info("Navigating to Hoyolab Post Page...");
+        driver.get("https://www.hoyolab.com/creator/post/video");
         Thread.sleep(5000);
     }
 
-    private void enterVideoLink(WebDriver driver, String videoLink) throws InterruptedException {
-        System.out.println("Entering video link...");
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
+    private void enterVideoLink(WebDriver driver, String videoUrl) {
+        log.info("Entering video link...");
         try {
-            WebElement linkInput = wait.until(ExpectedConditions.presenceOfElementLocated(
-                    By.xpath("//input[contains(@placeholder, '\u9023\u7d50') or contains(@placeholder, 'Link')]")));
-            linkInput.click();
-            linkInput.sendKeys(videoLink);
-            System.out.println("Video link entered.");
-            Thread.sleep(2000);
-            WebElement confirmButton = wait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath(
-                            """
-                                    //button[contains(., '\u78ba\u5b9a')] | //div[contains(., '\u78ba\u5b9a') and contains(@class, 'button')] | //div[contains(text(), '\u78ba\u5b9a')]
-                                    """)));
-            confirmButton.click();
-            System.out.println("Clicked Confirm button.");
-            Thread.sleep(3000);
-        } catch (Exception e) {
-            System.out.println("Could not find link input or confirm button: " + e.getMessage());
-            throw e;
-        }
-    }
-
-    private void setDescription(WebDriver driver, String description) {
-        if (description == null || description.isEmpty())
-            return;
-        System.out.println("Setting description...");
-        try {
-            WebElement descInput = new WebDriverWait(driver, Duration.ofSeconds(60))
+            WebElement input = new WebDriverWait(driver, Duration.ofSeconds(30))
                     .until(ExpectedConditions.presenceOfElementLocated(
                             By.xpath(
-                                    "//textarea[contains(@placeholder, '\u7c21\u4ecb')] | //div[@contenteditable='true']")));
-            descInput.click();
-            descInput.sendKeys(Keys.CONTROL + "a");
-            descInput.sendKeys(Keys.BACK_SPACE);
-            descInput.sendKeys(description);
-            System.out.println("Description set.");
-        } catch (Exception e) {
-            System.out.println("Could not find description input: " + e.getMessage());
-        }
-    }
+                                    "//input[contains(@placeholder, 'Enter video link') or contains(@placeholder, '輸入影片連結')]")));
+            input.sendKeys(videoUrl);
 
-    private void setCircle(WebDriver driver, List<String> hashtags) throws InterruptedException {
-        if (hashtags == null || hashtags.isEmpty())
-            return;
-        String circleName = hashtags.get(0);
-        System.out.println("Selecting Circle: " + circleName);
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
-        try {
-            wait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath(
-                            "//div[contains(@class, 'mhy-select__container') and contains(., '\u9078\u64c7\u5708\u5b50')]")))
-                    .click();
-            Thread.sleep(1000);
+            // Wait for validation/preview
+            Thread.sleep(3000);
+
+            // Click "Insert" or similar if needed (Hoyolab usually auto-fetches)
             try {
-                wait.until(ExpectedConditions.elementToBeClickable(
-                        By.xpath(
-                                """
-                                        //div[contains(@class, 'mhy-classification-selector-menu__biz') and (@title='%s' or contains(., '%s'))]
-                                        """
-                                        .formatted(circleName, circleName))))
-                        .click();
-            } catch (Exception ex) {
-                WebElement searchInput = wait.until(ExpectedConditions.presenceOfElementLocated(
-                        By.xpath("//input[@placeholder='\u641c\u5c0b\u5708\u5b50']")));
-                searchInput.sendKeys(circleName);
-                Thread.sleep(1000);
-                wait.until(ExpectedConditions.elementToBeClickable(
-                        By.xpath("//div[contains(@class, 'search-result')]//div[contains(text(), '" + circleName
-                                + "')]")))
-                        .click();
-            }
-            System.out.println("Circle selected.");
-        } catch (Exception e) {
-            System.out.println("Could not select circle: " + e.getMessage());
-        }
-    }
-
-    private void setCategory(WebDriver driver, String category) throws InterruptedException {
-        String categoryName = (category != null && !category.isEmpty()) ? category : "攻略與分析";
-        System.out.println("Selecting Category: " + categoryName);
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
-        try {
-            wait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath(
-                            "//div[contains(@class, 'mhy-select__container') and contains(., '\u9078\u64c7\u6b63\u78ba\u5206\u985e')]")))
-                    .click();
-            Thread.sleep(1000);
-            wait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath(
-                            """
-                                    //div[contains(@class, 'mhy-classification-selector-menu__biz') and (@title='%s' or .//div[contains(@class, 'desc-title') and contains(text(), '%s')]) ]
-                                    """
-                                    .formatted(categoryName, categoryName))))
-                    .click();
-            System.out.println("Category selected.");
-        } catch (Exception e) {
-            System.out.println("Could not select category: " + e.getMessage());
-        }
-    }
-
-    private void setTopics(WebDriver driver, List<String> hashtags) throws InterruptedException {
-        if (hashtags == null || hashtags.size() <= 1)
-            return;
-        System.out.println("Setting Topics...");
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
-        try {
-            WebElement topicInput = wait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath(
-                            "//div[contains(@class, 'topic-autocomplete')]//input[contains(@class, 'mhy-autocomplete__input')]")));
-            topicInput.click();
-            Thread.sleep(500);
-            for (int i = 1; i < hashtags.size(); i++) {
-                String topic = hashtags.get(i);
-                topicInput.sendKeys(topic);
-                Thread.sleep(1000);
-                try {
-                    wait.until(ExpectedConditions.elementToBeClickable(
-                            By.xpath(
-                                    """
-                                            //span[contains(@class, 'topic-autocomplete-recommend__match') and contains(text(), '%s')]
-                                            """
-                                            .formatted(topic))))
-                            .click();
-                } catch (Exception ex) {
-                    topicInput.sendKeys(Keys.ENTER);
+                WebElement insertBtn = driver
+                        .findElement(By.xpath("//button[contains(text(), 'Insert') or contains(text(), '插入')]"));
+                if (insertBtn.isDisplayed()) {
+                    insertBtn.click();
                 }
-                Thread.sleep(500);
-            }
-            driver.findElement(By.tagName("body")).click();
-            System.out.println("Topics set.");
-        } catch (Exception e) {
-            System.out.println("Could not set topics: " + e.getMessage());
-        }
-    }
-
-    private void setCopyright(WebDriver driver) {
-        System.out.println("Setting Copyright...");
-        try {
-            driver.findElement(By
-                    .xpath("""
-                            //div[contains(text(), '\u9019\u662f\u6211\u7684\u539f\u5275')]/following-sibling::div//input | //div[contains(text(), '\u9019\u662f\u6211\u7684\u539f\u5275')]/..//div[contains(@class, 'switch')]
-                            """))
-                    .click();
-            System.out.println("Copyright set.");
-        } catch (Exception e) {
-            System.out.println("Could not set copyright: " + e.getMessage());
-        }
-    }
-
-    private void clickPublishButton(WebDriver driver) throws InterruptedException {
-        System.out.println("Waiting for Publish button...");
-        WebElement publishButton = waitForPublishButton(driver);
-        if (publishButton != null) {
-            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});",
-                    publishButton);
-            Thread.sleep(1000);
-            System.out.println("Clicking Publish button with Actions...");
-            new Actions(driver).moveToElement(publishButton).click().perform();
-            System.out.println("Clicked Publish button.");
-            Thread.sleep(5000);
-        } else {
-            System.out.println("Publish button not found or not enabled.");
-        }
-        System.out.println("Hoyolab upload sequence finished.");
-        Thread.sleep(5000);
-    }
-
-    private WebElement waitForPublishButton(WebDriver driver) throws InterruptedException {
-        for (int i = 0; i < 60; i++) {
-            try {
-                WebElement btn = driver.findElement(By.xpath(
-                        "//button[contains(@class, 'hyl-button') and contains(., '\u767c\u8868')] | //button//span[contains(text(), '\u767c\u8868')]"));
-                if (btn.isEnabled())
-                    return btn;
             } catch (Exception ignored) {
             }
-            Thread.sleep(1000);
+
+            log.info("Video link entered.");
+        } catch (Exception e) {
+            log.error("Could not enter video link.");
         }
-        return null;
+    }
+
+    private void enterTitle(WebDriver driver, String title) {
+        if (title == null || title.isEmpty())
+            return;
+        log.info("Entering title...");
+        try {
+            WebElement input = new WebDriverWait(driver, Duration.ofSeconds(10))
+                    .until(ExpectedConditions.presenceOfElementLocated(
+                            By.xpath("//input[contains(@placeholder, 'Title') or contains(@placeholder, '標題')]")));
+            input.sendKeys(title);
+        } catch (Exception e) {
+            log.warn("Could not enter title: {}", e.getMessage());
+        }
+    }
+
+    private void enterDescription(WebDriver driver, String description) {
+        if (description == null || description.isEmpty())
+            return;
+        log.info("Entering description...");
+        try {
+            WebElement editor = new WebDriverWait(driver, Duration.ofSeconds(10))
+                    .until(ExpectedConditions.presenceOfElementLocated(
+                            By.xpath(
+                                    "//div[contains(@class, 'DraftEditor-editorContainer')]//div[@contenteditable='true']")));
+            editor.sendKeys(description);
+        } catch (Exception e) {
+            log.warn("Could not enter description: {}", e.getMessage());
+        }
+    }
+
+    private void selectCircle(WebDriver driver, String circleName) {
+        if (circleName == null || circleName.isEmpty())
+            return;
+        log.info("Selecting circle: {}", circleName);
+        try {
+            WebElement dropdown = new WebDriverWait(driver, Duration.ofSeconds(10))
+                    .until(ExpectedConditions.elementToBeClickable(
+                            By.xpath("//div[contains(@class, 'select-circle')]")));
+            dropdown.click();
+            Thread.sleep(1000);
+
+            WebElement option = new WebDriverWait(driver, Duration.ofSeconds(10))
+                    .until(ExpectedConditions.elementToBeClickable(
+                            By.xpath("//div[contains(@class, 'circle-item') and contains(text(), '" + circleName
+                                    + "')]")));
+            option.click();
+        } catch (Exception e) {
+            log.warn("Could not select circle: {}", e.getMessage());
+        }
+    }
+
+    private void selectCategory(WebDriver driver, String categoryName) {
+        if (categoryName == null || categoryName.isEmpty())
+            return;
+        log.info("Selecting category: {}", categoryName);
+        try {
+            // Assuming category selection logic similar to circle or radio buttons
+            WebElement category = new WebDriverWait(driver, Duration.ofSeconds(10))
+                    .until(ExpectedConditions.elementToBeClickable(
+                            By.xpath("//div[contains(@class, 'category-item') and contains(text(), '" + categoryName
+                                    + "')]")));
+            category.click();
+        } catch (Exception e) {
+            log.warn("Could not select category: {}", e.getMessage());
+        }
+    }
+
+    private void selectTopics(WebDriver driver, List<String> topics) {
+        if (topics == null || topics.isEmpty())
+            return;
+        log.info("Selecting topics...");
+        try {
+            WebElement addTopicBtn = new WebDriverWait(driver, Duration.ofSeconds(10))
+                    .until(ExpectedConditions.elementToBeClickable(
+                            By.xpath("//div[contains(@class, 'add-topic')]")));
+            addTopicBtn.click();
+            Thread.sleep(1000);
+
+            WebElement searchInput = driver.findElement(By.xpath("//input[contains(@placeholder, 'Search topic')]"));
+
+            for (String topic : topics) {
+                searchInput.sendKeys(Keys.CONTROL + "a");
+                searchInput.sendKeys(Keys.BACK_SPACE);
+                searchInput.sendKeys(topic);
+                Thread.sleep(1000);
+
+                try {
+                    WebElement result = new WebDriverWait(driver, Duration.ofSeconds(5))
+                            .until(ExpectedConditions.elementToBeClickable(
+                                    By.xpath("//div[contains(@class, 'topic-item') and contains(text(), '" + topic
+                                            + "')]")));
+                    result.click();
+                } catch (Exception ignored) {
+                    log.warn("Topic not found: {}", topic);
+                }
+            }
+
+            // Close topic selector if needed
+            Actions actions = new Actions(driver);
+            actions.sendKeys(Keys.ESCAPE).perform();
+
+        } catch (Exception e) {
+            log.warn("Could not select topics: {}", e.getMessage());
+        }
+    }
+
+    private void selectCopyright(WebDriver driver) {
+        log.info("Selecting copyright (Original)...");
+        try {
+            WebElement originalRadio = new WebDriverWait(driver, Duration.ofSeconds(10))
+                    .until(ExpectedConditions.elementToBeClickable(
+                            By.xpath("//div[contains(text(), 'Original') or contains(text(), '原創')]")));
+            originalRadio.click();
+        } catch (Exception e) {
+            log.warn("Could not select copyright: {}", e.getMessage());
+        }
+    }
+
+    private void clickPublish(WebDriver driver) {
+        log.info("Clicking Publish...");
+        try {
+            WebElement publishBtn = new WebDriverWait(driver, Duration.ofSeconds(30))
+                    .until(ExpectedConditions.elementToBeClickable(
+                            By.xpath("""
+                                    //button[contains(text(), 'Post') or contains(text(), '發佈')]
+                                    """)));
+
+            // Scroll to view
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", publishBtn);
+            Thread.sleep(1000);
+
+            new Actions(driver).moveToElement(publishBtn).click().perform();
+            log.info("Clicked Publish.");
+        } catch (Exception e) {
+            log.warn("Could not click Publish: {}", e.getMessage());
+        }
+    }
+
+    private void waitForSuccess(WebDriver driver) {
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.presenceOfElementLocated(
+                    By.xpath("//div[contains(text(), 'Post success') or contains(text(), '發佈成功')]")));
+            log.info("Success indicator found.");
+        } catch (Exception e) {
+            log.info("Proceeding without specific success text.");
+        }
     }
 }
