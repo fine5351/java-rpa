@@ -1,3 +1,17 @@
+### 崩壞三
+POST http://localhost:8080/api/youtube/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-11-23 17-44-10.mp4",
+  "title": "崩壞三-往世樂土-9",
+  "description": "劇情\r\n#崩壞三 #HonkaiImpact3rd",
+  "playlist": "崩壞三",
+  "visibility": "PUBLIC",
+  "hashtags": ["#崩壞三", "#HonkaiImpact3rd"]
+}
+
+
 ### 原神
 POST http://localhost:8080/api/youtube/upload
 Content-Type: application/json
