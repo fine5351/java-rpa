@@ -24,6 +24,7 @@ public class ThreadsService {
         log.info("Final Content: {}", finalContent);
 
         WebDriver driver = null;
+        boolean success = false;
         try {
             driver = initializeDriver();
             navigateToThreads(driver);
@@ -31,11 +32,16 @@ public class ThreadsService {
             enterContent(driver, finalContent);
             clickPost(driver);
             waitForSuccess(driver);
+            success = true;
         } catch (Exception e) {
             log.error("Error during Threads post", e);
         } finally {
-            if (driver != null)
+            if (driver != null && success) {
                 driver.quit();
+                log.info("Browser closed successfully.");
+            } else if (driver != null) {
+                log.warn("Browser left open for debugging.");
+            }
         }
     }
 
@@ -119,12 +125,25 @@ public class ThreadsService {
     }
 
     private void waitForSuccess(WebDriver driver) {
-        try {
-            new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.presenceOfElementLocated(
-                    By.xpath("//div[contains(text(), 'Posted') or contains(text(), '已發佈')]")));
-            log.info("Success indicator found.");
-        } catch (Exception e) {
-            log.info("Proceeding without specific success text.");
+        log.info("Waiting for success...");
+        while (true) {
+            try {
+                List<WebElement> successElements = driver
+                        .findElements(By.xpath("//div[contains(text(), 'Posted') or contains(text(), '已發佈')]"));
+                if (!successElements.isEmpty() && successElements.get(0).isDisplayed()) {
+                    log.info("Success indicator found.");
+                    break;
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+            log.info("Waiting for Threads publish success...");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
         }
     }
 }

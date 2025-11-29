@@ -1,0 +1,46 @@
+### youtube
+POST http://localhost:8080/api/youtube/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\2.4-將臨未抵的深淵\\2.4-將臨未抵的深淵-5.mp4",
+  "title": "2.4-將臨未抵的深淵-5",
+  "description": "劇情\r\n",
+  "playlist": "絕區零",
+  "visibility": "PUBLIC",
+  "hashtags": ["絕區零", "ZenlessZoneZero", "將臨未抵的深淵"]
+}
+### bilibili
+POST http://localhost:8080/api/bilibili/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\2.4-將臨未抵的深淵\\2.4-將臨未抵的深淵-5.mp4",
+  "title": "2.4-將臨未抵的深淵-5",
+  "description": "劇情\r\n",
+  "visibility": "public",
+  "hashtags": ["絕區零", "ZenlessZoneZero", "將臨未抵的深淵"]
+}
+### 小紅書
+POST http://localhost:8080/api/xiaohongshu/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\2.4-將臨未抵的深淵\\2.4-將臨未抵的深淵-5.mp4",
+  "title": "2.4-將臨未抵的深淵-5",
+  "description": "劇情\r\n",
+  "visibility": "public",
+  "hashtags": ["絕區零", "ZenlessZoneZero", "將臨未抵的深淵"]
+}
+
+### TikTok ｛
+POST http://localhost:8080/api/tiktok/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\2.4-將臨未抵的深淵\\2.4-將臨未抵的深淵-5.mp4",
+  "title": "2.4-將臨未抵的深淵-5",
+  "description": "劇情\r\n",
+  "visibility": "PUBLIC",
+  "hashtags": ["絕區零", "ZenlessZoneZero", "將臨未抵的深淵"]
+}

@@ -3,8 +3,8 @@ POST http://localhost:8080/api/youtube/upload
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-11-23 17-44-10.mp4",
-  "title": "崩壞三-往世樂土-9",
+  "filePath": "D:\\Download\\OBS-VidoeRecord\\崩壞三-往世樂土11.mkv",
+  "title": "崩壞三-往世樂土-11",
   "description": "劇情\r\n#崩壞三 #HonkaiImpact3rd",
   "playlist": "崩壞三",
   "visibility": "PUBLIC",
@@ -43,10 +43,10 @@ POST http://localhost:8080/api/youtube/upload
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-11-21 21-40-39.mp4",
-  "title": "2025-11-21-式輿防衛戰",
-  "description": "練度展示於結尾",
-  "playlist": "絕區零-高難",
+  "filePath": "D:\\Download\\2.4-將臨未抵的深淵\\2.4-將臨未抵的深淵-1.mp4",
+  "title": "2.4-將臨未抵的深淵",
+  "description": "劇情",
+  "playlist": "絕區零",
   "visibility": "PUBLIC",
-  "hashtags": ["#絕區零", "#ZenlessZoneZero"]
+  "hashtags": ["#絕區零", "#ZenlessZoneZero", "#將臨未抵的深淵"]
 }

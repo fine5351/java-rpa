@@ -1,7 +1,6 @@
 package com.example.rpa.controller;
 
 import com.example.rpa.dto.BilibiliVideoUploadRequest;
-import com.example.rpa.dto.IntegratedVideoUploadRequest;
 import com.example.rpa.dto.TikTokVideoUploadRequest;
 import com.example.rpa.dto.XiaohongshuVideoUploadRequest;
 import com.example.rpa.dto.YoutubeVideoUploadRequest;
@@ -108,72 +107,6 @@ public class UploadController {
         }).start();
 
         return "Bilibili Upload started! Check the browser window.";
-    }
-
-    @PostMapping("/integrated/upload")
-    public String uploadToIntegrated(@RequestBody IntegratedVideoUploadRequest request) {
-        log.info("Received Integrated upload request: {}", request);
-        new Thread(() -> {
-            Set<String> platforms = request.getPlatforms();
-            if (platforms == null || platforms.isEmpty()) {
-                log.warn("No platforms specified for integrated upload.");
-                return;
-            }
-
-            if (platforms.contains("YOUTUBE")) {
-                try {
-                    youTubeService.uploadVideo(
-                            request.getFilePath(),
-                            request.getTitle(),
-                            request.getDescription(),
-                            request.getPlaylist(),
-                            request.getVisibility(),
-                            request.getHashtags());
-                } catch (Exception e) {
-                    log.error("Error uploading to YouTube (Integrated)", e);
-                }
-            }
-
-            if (platforms.contains("TIKTOK")) {
-                try {
-                    tikTokService.uploadVideo(
-                            request.getFilePath(),
-                            request.getTitle(),
-                            request.getDescription(),
-                            request.getVisibility(),
-                            request.getHashtags());
-                } catch (Exception e) {
-                    log.error("Error uploading to TikTok (Integrated)", e);
-                }
-            }
-
-            if (platforms.contains("XIAOHONGSHU")) {
-                try {
-                    xiaohongshuService.uploadVideo(
-                            request.getFilePath(),
-                            request.getTitle(),
-                            request.getDescription(),
-                            request.getHashtags());
-                } catch (Exception e) {
-                    log.error("Error uploading to Xiaohongshu (Integrated)", e);
-                }
-            }
-
-            if (platforms.contains("BILIBILI")) {
-                try {
-                    bilibiliService.uploadVideo(
-                            request.getFilePath(),
-                            request.getTitle(),
-                            request.getDescription(),
-                            request.getHashtags());
-                } catch (Exception e) {
-                    log.error("Error uploading to Bilibili (Integrated)", e);
-                }
-            }
-
-        }).start();
-
-        return "Integrated Upload started! Check the browser window.";
     }
 
 }

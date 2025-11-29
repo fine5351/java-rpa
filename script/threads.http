@@ -1,5 +1,16 @@
-### Threads Post Example
-POST http://localhost:8080/api/threads/post
+### 崩鐵
+POST http://localhost:8080/api/post/threads
+Content-Type: application/json
+
+{
+    "videoUrl": "https://youtu.be/G69kJWLLOl0",
+    "title": "2025-11-25-虛構敘事-程式語法",
+    "description": "練度展示於結尾",
+    "topic": "崩壞星穹鐵道"
+}
+
+### 絕區零
+POST http://localhost:8080/api/post/threads
 Content-Type: application/json
 
 {

@@ -1,3 +1,14 @@
+### 崩鐵
+POST http://localhost:8080/api/tiktok/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-11-25-虛構敘事-程式語法.mp4",
+  "title": "2025-11-25-虛構敘事-程式語法",
+  "description": "練度展示於結尾",
+  "visibility": "PUBLIC",
+  "hashtags": ["#崩壞星穹鐵道", "#HonkaiStarRail", "程式語法"]
+}
 ### TikTok Upload Example
 POST http://localhost:8080/api/tiktok/upload
 Content-Type: application/json

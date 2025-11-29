@@ -1,2 +1,6 @@
 server:
   port: 8080
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread][%logger{36}][%-5level][%line] : %msg%n"

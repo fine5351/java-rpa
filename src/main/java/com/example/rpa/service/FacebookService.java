@@ -24,6 +24,7 @@ public class FacebookService {
         log.info("Final Content: {}", finalContent);
 
         WebDriver driver = null;
+        boolean success = false;
         try {
             driver = initializeDriver();
             navigateToFacebook(driver);
@@ -31,11 +32,16 @@ public class FacebookService {
             enterContent(driver, finalContent);
             clickPost(driver);
             waitForSuccess(driver);
+            success = true;
         } catch (Exception e) {
             log.error("Error during Facebook post", e);
         } finally {
-            if (driver != null)
+            if (driver != null && success) {
                 driver.quit();
+                log.info("Browser closed successfully.");
+            } else if (driver != null) {
+                log.warn("Browser left open for debugging.");
+            }
         }
     }
 
@@ -115,13 +121,24 @@ public class FacebookService {
     }
 
     private void waitForSuccess(WebDriver driver) {
-        try {
-            // Wait for dialog to disappear or success toast
-            new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.invisibilityOfElementLocated(
-                    By.xpath("//div[@role='dialog']")));
-            log.info("Post dialog closed, assuming success.");
-        } catch (Exception e) {
-            log.info("Dialog did not close or timeout.");
+        log.info("Waiting for success...");
+        while (true) {
+            try {
+                List<WebElement> dialogs = driver.findElements(By.xpath("//div[@role='dialog']"));
+                if (dialogs.isEmpty()) {
+                    log.info("Post dialog closed, assuming success.");
+                    break;
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+            log.info("Waiting for Facebook post to complete...");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
         }
     }
 }

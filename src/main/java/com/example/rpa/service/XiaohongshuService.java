@@ -35,6 +35,7 @@ public class XiaohongshuService {
         log.info("Simplified Description: {}", simplifiedDescription);
 
         WebDriver driver = null;
+        boolean success = false;
         try {
             driver = initializeDriver();
             navigateToCreatorStudio(driver);
@@ -42,13 +43,18 @@ public class XiaohongshuService {
             waitForUploadComplete(driver);
             setTitle(driver, simplifiedTitle);
             setDescription(driver, simplifiedDescription);
+            waitForPublishComplete(driver);
             clickPublish(driver);
-            waitForSuccess(driver);
+            success = true;
         } catch (Exception e) {
             log.error("Error during Xiaohongshu upload", e);
         } finally {
-            if (driver != null)
+            if (driver != null && success) {
                 driver.quit();
+                log.info("Browser closed successfully.");
+            } else if (driver != null) {
+                log.warn("Browser left open for debugging.");
+            }
         }
     }
 
@@ -67,7 +73,7 @@ public class XiaohongshuService {
         if (hashtags != null) {
             for (String tag : hashtags) {
                 if (!desc.contains(tag))
-                    desc += " " + tag;
+                    desc += " #" + tag;
             }
         }
         return desc.trim();
@@ -83,17 +89,21 @@ public class XiaohongshuService {
         return new ChromeDriver(options);
     }
 
-    private void navigateToCreatorStudio(WebDriver driver) throws InterruptedException {
-        log.info("Navigating to Xiaohongshu Creator Studio...");
+    private void navigateToCreatorStudio(WebDriver driver) {
+        log.info("尋找 上傳頁面 位置中");
+        log.info("已找到 上傳頁面 : {}", "https://creator.xiaohongshu.com/publish/publish");
+        log.info("執行 前往上傳頁面 操作");
         driver.get("https://creator.xiaohongshu.com/publish/publish");
-        Thread.sleep(5000);
     }
 
     private void uploadFile(WebDriver driver, String filePath) {
-        log.info("Uploading file...");
+        log.info("尋找 上傳按鈕 位置中");
         try {
+            By selector = By.xpath("//input[@type='file']");
             WebElement fileInput = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//input[@type='file']")));
+                    .until(ExpectedConditions.presenceOfElementLocated(selector));
+            log.info("已找到 上傳按鈕 : {}", selector);
+            log.info("執行 上傳檔案 操作");
             fileInput.sendKeys(filePath);
         } catch (Exception e) {
             log.error("File input not found.");
@@ -103,21 +113,48 @@ public class XiaohongshuService {
 
     private void waitForUploadComplete(WebDriver driver) {
         log.info("Waiting for upload to complete...");
-        try {
-            new WebDriverWait(driver, Duration.ofSeconds(120)).until(ExpectedConditions.presenceOfElementLocated(
-                    By.xpath("//div[contains(text(), '上传成功') or contains(text(), 'Upload success')]")));
-            log.info("Upload complete.");
-        } catch (Exception e) {
-            log.warn("Upload completion text not found, proceeding...");
+        while (true) {
+            try {
+                boolean isUploading = false;
+                List<WebElement> progressElements = driver.findElements(By.xpath("//*[contains(text(), '%')]"));
+                for (WebElement el : progressElements) {
+                    String text = el.getText();
+                    if (text.matches(".*\\d+%.*") && !text.contains("100%")) {
+                        isUploading = true;
+                        log.info("Upload progress: {}", text);
+                        break;
+                    }
+                }
+
+                if (!isUploading) {
+                    List<WebElement> successElements = driver.findElements(
+                            By.xpath("//*[contains(text(), '上传成功') or contains(text(), 'Upload success')]"));
+                    if (!successElements.isEmpty()) {
+                        log.info("Upload complete.");
+                        break;
+                    }
+                }
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                log.info("Waiting for upload...");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
         }
     }
 
     private void setTitle(WebDriver driver, String title) {
-        log.info("Setting title...");
+        log.info("尋找 標題輸入框 位置中");
         try {
+            By selector = By.xpath("//input[contains(@placeholder, '填写标题') or contains(@placeholder, '標題')]");
             WebElement titleInput = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.presenceOfElementLocated(
-                            By.xpath("//input[contains(@placeholder, '标题') or contains(@placeholder, 'Title')]")));
+                    .until(ExpectedConditions.presenceOfElementLocated(selector));
+            log.info("已找到 標題輸入框 : {}", selector);
+            log.info("執行 設定標題 操作");
             titleInput.click();
             titleInput.sendKeys(Keys.CONTROL + "a");
             titleInput.sendKeys(Keys.BACK_SPACE);
@@ -129,11 +166,14 @@ public class XiaohongshuService {
     }
 
     private void setDescription(WebDriver driver, String description) {
-        log.info("Setting description...");
+        log.info("尋找 說明輸入框 位置中");
         try {
+            By selector = By.xpath(
+                    "//div[contains(@class, 'tiptap') and contains(@class, 'ProseMirror') and @contenteditable='true']");
             WebElement descInput = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.presenceOfElementLocated(
-                            By.xpath("//div[@id='post-textarea']")));
+                    .until(ExpectedConditions.presenceOfElementLocated(selector));
+            log.info("已找到 說明輸入框 : {}", selector);
+            log.info("執行 設定說明 操作");
             descInput.click();
 
             // Split description by spaces to handle hashtags
@@ -143,11 +183,41 @@ public class XiaohongshuService {
                 descInput.sendKeys(" ");
                 if (part.startsWith("#")) {
                     try {
-                        Thread.sleep(1000); // Wait for suggestion
-                        WebElement suggestion = new WebDriverWait(driver, Duration.ofSeconds(2))
-                                .until(ExpectedConditions.presenceOfElementLocated(
-                                        By.xpath("//li[contains(@class, 'topic-item')]")));
-                        suggestion.click();
+                        log.info("尋找 標籤建議 位置中");
+                        By suggestionSelector = By
+                                .xpath("//div[@id='creator-editor-topic-container']//div[contains(@class, 'item')]");
+                        List<WebElement> suggestions = new WebDriverWait(driver, Duration.ofSeconds(5))
+                                .until(ExpectedConditions.presenceOfAllElementsLocatedBy(suggestionSelector));
+                        log.info("已找到 標籤建議 : {}", suggestionSelector);
+
+                        WebElement bestMatch = null;
+                        long maxViews = -1;
+
+                        for (WebElement item : suggestions) {
+                            try {
+                                String name = item.findElement(By.className("name")).getText();
+                                String numText = item.findElement(By.className("num")).getText();
+
+                                if (name.equals(part)) {
+                                    long views = parseViews(numText);
+                                    if (views > maxViews) {
+                                        maxViews = views;
+                                        bestMatch = item;
+                                    }
+                                }
+                            } catch (Exception ignored) {
+                            }
+                        }
+
+                        if (bestMatch != null) {
+                            log.info("執行 點擊最佳建議 操作");
+                            bestMatch.click();
+                        } else if (!suggestions.isEmpty()) {
+                            // Fallback: click the first one if no exact match found, or just ignore
+                            log.info("執行 點擊首個建議 操作");
+                            suggestions.get(0).click();
+                        }
+
                     } catch (Exception ignored) {
                         // No suggestion or timeout, just continue
                     }
@@ -159,33 +229,84 @@ public class XiaohongshuService {
         }
     }
 
-    private void clickPublish(WebDriver driver) {
-        log.info("Clicking Publish...");
+    private long parseViews(String numText) {
+        if (numText == null)
+            return 0;
+        numText = numText.replace("人浏览", "").trim();
+        double multiplier = 1;
+        if (numText.endsWith("亿")) {
+            multiplier = 100000000;
+            numText = numText.replace("亿", "");
+        } else if (numText.endsWith("万")) {
+            multiplier = 10000;
+            numText = numText.replace("万", "");
+        }
         try {
+            return (long) (Double.parseDouble(numText) * multiplier);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private void waitForPublishComplete(WebDriver driver) {
+        log.info("Waiting for publish to complete...");
+        while (true) {
+            try {
+                // Check for upload progress (e.g., "上传中 28%")
+                List<WebElement> progressElements = driver.findElements(By.xpath("//div[contains(text(), '上传中')]"));
+                if (!progressElements.isEmpty()) {
+                    String progressText = progressElements.get(0).getText().trim();
+                    log.info("Xiaohongshu publish progress: {}", progressText);
+                    Thread.sleep(2000);
+                    continue;
+                }
+
+                // If no progress indicator, assume ready to publish
+                break;
+            } catch (Exception e) {
+                // Ignore and continue waiting
+            }
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
+
+    private void clickPublish(WebDriver driver) {
+        log.info("尋找 發佈按鈕 位置中");
+        try {
+            By selector = By.xpath(
+                    "//span[contains(@class, 'd-text') and (contains(text(), '发布') or contains(text(), 'Publish'))]");
             WebElement publishBtn = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.elementToBeClickable(
-                            By.xpath("//button[contains(text(), '发布') or contains(text(), 'Publish')]")));
+                    .until(ExpectedConditions.elementToBeClickable(selector));
+            log.info("已找到 發佈按鈕 : {}", selector);
 
             // Scroll to view
             ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", publishBtn);
-            Thread.sleep(1000);
 
+            log.info("執行 點擊發佈 操作");
             publishBtn.click();
             log.info("Clicked Publish.");
+
+            // Wait for success
+            try {
+                By successSelector = By.xpath("//div[contains(text(), '发布成功') or contains(text(), 'Publish success')]");
+                WebElement successElement = new WebDriverWait(driver, Duration.ofSeconds(60))
+                        .until(ExpectedConditions.presenceOfElementLocated(successSelector));
+                log.info("Success indicator found: {}", successElement.getText());
+
+                // Wait 2 seconds before closing
+                log.info("Waiting 2 seconds before closing...");
+                Thread.sleep(2000);
+            } catch (Exception e) {
+                log.warn("Could not find success indicator: {}", e.getMessage());
+            }
         } catch (Exception e) {
             log.warn("Could not click Publish: {}", e.getMessage());
         }
     }
 
-    private void waitForSuccess(WebDriver driver) {
-        try {
-            new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.presenceOfElementLocated(
-                    By.xpath("""
-                            //div[contains(text(), '发布成功') or contains(text(), 'Publish success')]
-                            """)));
-            log.info("Success indicator found.");
-        } catch (Exception e) {
-            log.info("Proceeding without specific success text.");
-        }
-    }
 }

@@ -22,17 +22,24 @@ public class XService {
 
     public void postLink(String content, List<String> hashtags) {
         WebDriver driver = null;
+        boolean success = false;
         try {
             driver = initializeDriver();
             navigateToCompose(driver);
             enterContent(driver, content);
             enterHashtags(driver, hashtags);
             clickPost(driver);
+            waitForSuccess(driver);
+            success = true;
         } catch (Exception e) {
             log.error("Error during X post", e);
         } finally {
-            if (driver != null)
+            if (driver != null && success) {
                 driver.quit();
+                log.info("Browser closed successfully.");
+            } else if (driver != null) {
+                log.warn("Browser left open for debugging.");
+            }
         }
     }
 
@@ -97,14 +104,6 @@ public class XService {
             postBtn.click();
             log.info("Clicked Post.");
 
-            // Wait for success toast or redirect
-            try {
-                new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.presenceOfElementLocated(
-                        By.xpath("//div[@data-testid='toast']")));
-                log.info("Post success toast found.");
-            } catch (Exception ignored) {
-            }
-
         } catch (Exception e) {
             // Fallback for different button text/selector
             try {
@@ -117,6 +116,28 @@ public class XService {
                 log.info("Clicked Post (Fallback).");
             } catch (Exception ex) {
                 log.warn("Could not click Post: {}", ex.getMessage());
+            }
+        }
+    }
+
+    private void waitForSuccess(WebDriver driver) {
+        log.info("Waiting for success...");
+        while (true) {
+            try {
+                List<WebElement> successElements = driver.findElements(By.xpath("//div[@data-testid='toast']"));
+                if (!successElements.isEmpty() && successElements.get(0).isDisplayed()) {
+                    log.info("Success indicator found.");
+                    break;
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+            log.info("Waiting for X post success...");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
             }
         }
     }
