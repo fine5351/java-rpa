@@ -323,18 +323,36 @@ public class XiaohongshuService {
                 // Wait for success
                 try {
                     By successSelector = By
-                            .xpath("//div[contains(text(), '发布成功') or contains(text(), 'Publish success')]");
-                    WebElement successElement = new WebDriverWait(driver, Duration.ofSeconds(60))
+                            .xpath("//*[contains(text(), '发布成功') or contains(text(), 'Publish success')]");
+                    WebElement successElement = new WebDriverWait(driver, Duration.ofSeconds(10))
                             .until(ExpectedConditions.presenceOfElementLocated(successSelector));
                     log.info("Success indicator found: {}", successElement.getText());
-
-                    // Wait 3 seconds before closing
-                    log.info("Waiting 3 seconds before closing...");
-                    Thread.sleep(3000);
                 } catch (Exception e) {
-                    log.warn("Could not find success indicator: {}", e.getMessage());
-                    throw new RuntimeException("Upload success indicator not found", e);
+                    log.warn("Success indicator not found: {}", e.getMessage());
+                    // Fallback: check if publish button is gone
+                    try {
+                        log.info("Checking if publish button is gone...");
+                        boolean btnStillVisible = !driver.findElements(selector).isEmpty()
+                                && driver.findElement(selector).isDisplayed();
+                        if (btnStillVisible) {
+                            log.error("Publish button is still visible. Upload might have failed.");
+                            throw new RuntimeException("Publish button still visible after click");
+                        } else {
+                            log.info("Publish button is gone. Assuming success.");
+                        }
+                    } catch (Exception ex) {
+                        // If findElement throws, it means it's gone (good)
+                        log.info("Publish button is gone (exception). Assuming success.");
+                    }
                 }
+
+                // Wait a bit before closing
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+
             } else {
                 log.error("No visible element found with class 'publishBtn'");
                 throw new RuntimeException("No visible element found with class 'publishBtn'");

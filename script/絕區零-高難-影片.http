@@ -1,0 +1,56 @@
+### youtube
+POST http://localhost:8080/api/youtube/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-11-28-危局強襲戰.mp4",
+  "title": "2025-11-28-危局強襲戰",
+  "description": "練度展示於結尾\r\n",
+  "playlist": "絕區零-高難",
+  "visibility": "PUBLIC",
+  "hashtags": ["絕區零", "ZenlessZoneZero"]
+}
+### bilibili
+POST http://localhost:8080/api/bilibili/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-11-28-危局強襲戰.mp4",
+  "title": "2025-11-28-危局強襲戰",
+  "description": "練度展示於結尾\r\n",
+  "visibility": "public",
+  "hashtags": ["絕區零", "ZenlessZoneZero"]
+}
+### 小紅書
+POST http://localhost:8080/api/xiaohongshu/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-11-28-危局強襲戰.mp4",
+  "title": "2025-11-28-危局強襲戰",
+  "description": "練度展示於結尾\r\n",
+  "visibility": "public",
+  "hashtags": ["絕區零", "ZenlessZoneZero"]
+}
+
+### TikTok ｛
+POST http://localhost:8080/api/tiktok/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-11-28-危局強襲戰.mp4",
+  "title": "2025-11-28-危局強襲戰",
+  "description": "練度展示於結尾\r\n",
+  "visibility": "PUBLIC",
+  "hashtags": ["絕區零", "ZenlessZoneZero"]
+}
+
+### Batch Upload
+POST http://localhost:8080/api/batch/upload
+Content-Type: application/json
+
+{
+  "folderPath": "D:\\Download\\2.4-危局強襲戰",
+  "description": "練度展示於結尾\r\n",
+  "playlist": "絕區零"
+}
