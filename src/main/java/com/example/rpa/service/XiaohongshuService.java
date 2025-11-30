@@ -277,35 +277,65 @@ public class XiaohongshuService {
 
     private void clickPublish(WebDriver driver) {
         log.info("尋找 發佈按鈕 位置中");
-        try {
-            By selector = By.xpath(
-                    "//span[contains(@class, 'd-text') and (contains(text(), '发布') or contains(text(), 'Publish'))]");
-            WebElement publishBtn = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.elementToBeClickable(selector));
-            log.info("已找到 發佈按鈕 : {}", selector);
 
-            // Scroll to view
-            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", publishBtn);
+        WebElement publishBtn = null;
 
-            log.info("執行 點擊發佈 操作");
-            publishBtn.click();
-            log.info("Clicked Publish.");
+        // Try multiple selectors with fallback strategy
+        By[] selectors = {
+                // Primary selector: exact match from user's HTML
+                By.xpath("//div[@class='d-button-content']//span[contains(text(), '发布')]"),
+                // Fallback 1: contains class instead of exact match
+                By.xpath("//div[contains(@class, 'd-button-content')]//span[contains(text(), '发布')]"),
+                // Fallback 2: include English text
+                By.xpath(
+                        "//div[contains(@class, 'd-button-content')]//span[contains(text(), '发布') or contains(text(), 'Publish')]"),
+                // Fallback 3: direct span search
+                By.xpath("//span[contains(@class, 'd-text') and contains(text(), '发布')]")
+        };
 
-            // Wait for success
+        for (int i = 0; i < selectors.length; i++) {
             try {
-                By successSelector = By.xpath("//div[contains(text(), '发布成功') or contains(text(), 'Publish success')]");
-                WebElement successElement = new WebDriverWait(driver, Duration.ofSeconds(60))
-                        .until(ExpectedConditions.presenceOfElementLocated(successSelector));
-                log.info("Success indicator found: {}", successElement.getText());
-
-                // Wait 2 seconds before closing
-                log.info("Waiting 2 seconds before closing...");
-                Thread.sleep(2000);
+                log.info("嘗試選擇器 {} : {}", i + 1, selectors[i]);
+                publishBtn = new WebDriverWait(driver, Duration.ofSeconds(10))
+                        .until(ExpectedConditions.elementToBeClickable(selectors[i]));
+                log.info("已找到 發佈按鈕 使用選擇器 {} : {}", i + 1, selectors[i]);
+                break;
             } catch (Exception e) {
-                log.warn("Could not find success indicator: {}", e.getMessage());
+                log.warn("選擇器 {} 失敗: {}", i + 1, e.getMessage());
+                if (i == selectors.length - 1) {
+                    log.error("所有選擇器都失敗，無法找到發佈按鈕");
+                    throw new RuntimeException("Could not find publish button with any selector", e);
+                }
             }
-        } catch (Exception e) {
-            log.warn("Could not click Publish: {}", e.getMessage());
+        }
+
+        if (publishBtn != null) {
+            try {
+                // Scroll to view
+                ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", publishBtn);
+
+                log.info("執行 點擊發佈 操作");
+                publishBtn.click();
+                log.info("Clicked Publish.");
+
+                // Wait for success
+                try {
+                    By successSelector = By
+                            .xpath("//div[contains(text(), '发布成功') or contains(text(), 'Publish success')]");
+                    WebElement successElement = new WebDriverWait(driver, Duration.ofSeconds(60))
+                            .until(ExpectedConditions.presenceOfElementLocated(successSelector));
+                    log.info("Success indicator found: {}", successElement.getText());
+
+                    // Wait 2 seconds before closing
+                    log.info("Waiting 2 seconds before closing...");
+                    Thread.sleep(2000);
+                } catch (Exception e) {
+                    log.warn("Could not find success indicator: {}", e.getMessage());
+                }
+            } catch (Exception e) {
+                log.error("Could not click Publish button: {}", e.getMessage());
+                throw new RuntimeException("Failed to click publish button", e);
+            }
         }
     }
 

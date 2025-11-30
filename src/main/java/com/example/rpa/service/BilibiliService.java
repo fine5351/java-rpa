@@ -145,26 +145,25 @@ public class BilibiliService {
         log.info("Waiting for upload to complete...");
         while (true) {
             try {
-                boolean isUploading = false;
+                // Check for success message or completion state FIRST
+                // User reported seeing "上传完成" while progress was still 99%
+                List<WebElement> successElements = driver.findElements(
+                        By.xpath(
+                                "//*[contains(text(), '上传成功') or contains(text(), 'Upload success') or contains(text(), '上传完成')]"));
+                if (!successElements.isEmpty()) {
+                    log.info("Upload complete (success message found).");
+                    break;
+                }
+
                 List<WebElement> progressElements = driver.findElements(By.xpath("//*[contains(text(), '%')]"));
                 for (WebElement el : progressElements) {
                     String text = el.getText();
                     if (text.matches(".*\\d+%.*") && !text.contains("100%")) {
-                        isUploading = true;
                         log.info("Upload progress: {}", text);
                         break;
                     }
                 }
 
-                if (!isUploading) {
-                    // Check for success message or completion state
-                    List<WebElement> successElements = driver.findElements(
-                            By.xpath("//*[contains(text(), '上传成功') or contains(text(), 'Upload success')]"));
-                    if (!successElements.isEmpty()) {
-                        log.info("Upload complete.");
-                        break;
-                    }
-                }
                 Thread.sleep(1000);
             } catch (Exception e) {
                 log.info("Waiting for upload...");
