@@ -45,7 +45,10 @@ public class UploadController {
                         request.getDescription(),
                         request.getPlaylist(),
                         request.getVisibility(),
-                        request.getHashtags());
+                        request.getPlaylist(),
+                        request.getVisibility(),
+                        request.getHashtags(),
+                        true);
             } catch (Exception e) {
                 log.error("Error uploading to YouTube", e);
             }
@@ -64,7 +67,9 @@ public class UploadController {
                         request.getTitle(),
                         request.getDescription(),
                         request.getVisibility(),
-                        request.getHashtags());
+                        request.getVisibility(),
+                        request.getHashtags(),
+                        true);
             } catch (Exception e) {
                 log.error("Error uploading to TikTok", e);
             }
@@ -82,7 +87,10 @@ public class UploadController {
                         request.getFilePath(),
                         request.getTitle(),
                         request.getDescription(),
-                        request.getHashtags());
+                        request.getTitle(),
+                        request.getDescription(),
+                        request.getHashtags(),
+                        true);
             } catch (Exception e) {
                 log.error("Error uploading to Xiaohongshu", e);
             }
@@ -100,13 +108,33 @@ public class UploadController {
                         request.getFilePath(),
                         request.getTitle(),
                         request.getDescription(),
-                        request.getHashtags());
+                        request.getTitle(),
+                        request.getDescription(),
+                        request.getHashtags(),
+                        true);
             } catch (Exception e) {
                 log.error("Error uploading to Bilibili", e);
             }
         }).start();
 
         return "Bilibili Upload started! Check the browser window.";
+    }
+
+    @Autowired
+    private com.example.rpa.service.MultiPlatformUploadService multiPlatformUploadService;
+
+    @PostMapping("/batch/upload")
+    public String batchUpload(@RequestBody com.example.rpa.dto.BatchUploadRequest request) {
+        log.info("Received batch upload request: {}", request);
+        new Thread(() -> {
+            try {
+                multiPlatformUploadService.uploadFromFolder(request);
+            } catch (Exception e) {
+                log.error("Error during batch upload", e);
+            }
+        }).start();
+
+        return "Batch Upload started! Check the logs for progress.";
     }
 
 }

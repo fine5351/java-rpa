@@ -25,7 +25,7 @@ public class TikTokService {
             "式輿防衛戰", "零號空洞", "幽境危戰", "異相仲裁", "擬真鏖戰試煉", "危局強襲戰");
 
     public void uploadVideo(String filePath, String title, String description, String visibility,
-            List<String> hashtags) {
+            List<String> hashtags, boolean keepOpenOnFailure) {
         String finalCaption = buildCaption(title, description, hashtags);
         log.info("Processed Caption: {}", finalCaption);
 
@@ -43,11 +43,13 @@ public class TikTokService {
         } catch (Exception e) {
             log.error("Error during TikTok upload", e);
         } finally {
-            if (driver != null && success) {
-                driver.quit();
-                log.info("Browser closed successfully.");
-            } else if (driver != null) {
-                log.warn("Browser left open for debugging.");
+            if (driver != null) {
+                if (success || !keepOpenOnFailure) {
+                    driver.quit();
+                    log.info("Browser closed successfully.");
+                } else {
+                    log.warn("Browser left open for debugging.");
+                }
             }
         }
     }
@@ -226,22 +228,37 @@ public class TikTokService {
                 log.info("尋找 發佈確認按鈕 位置中");
                 By confirmSelector = By.xpath(
                         "//button[contains(@class, 'TUXButton') and .//div[contains(@class, 'TUXButton-label') and (contains(text(), '立即發佈') or contains(text(), 'Post'))]]");
-                WebElement confirmButton = new WebDriverWait(driver, Duration.ofSeconds(10))
+                WebElement confirmButton = new WebDriverWait(driver, Duration.ofSeconds(5))
                         .until(ExpectedConditions.elementToBeClickable(confirmSelector));
                 log.info("已找到 發佈確認按鈕 : {}", confirmSelector);
                 log.info("執行 點擊發佈 操作");
                 confirmButton.click();
                 log.info("Clicked Post Immediately.");
-
-                // Wait 2 seconds before closing
-                log.info("Waiting 2 seconds before closing...");
-                Thread.sleep(2000);
             } catch (Exception e) {
-                log.info("No 'Post Immediately' modal appeared: {}", e.getMessage());
+                log.info("No 'Post Immediately' modal appeared (or timed out): {}", e.getMessage());
             }
+
+            // Wait for success message/redirection
+            log.info("Waiting for post success...");
+            try {
+                By successSelector = By.xpath(
+                        "//div[contains(text(), 'Manage your posts') or contains(text(), 'View profile') or contains(text(), 'Upload another video') or contains(text(), '上傳另一支影片')]");
+                new WebDriverWait(driver, Duration.ofSeconds(30))
+                        .until(ExpectedConditions.presenceOfElementLocated(successSelector));
+                log.info("Post success indicator found.");
+            } catch (Exception e) {
+                // Try checking URL change or other indicators
+                log.warn("Explicit success message not found, checking URL...");
+                // If URL changes to profile or management page, it's likely success
+            }
+
+            // Wait 3 seconds before closing
+            log.info("Waiting 3 seconds before closing...");
+            Thread.sleep(3000);
 
         } catch (Exception e) {
             log.warn("Could not click Post: {}", e.getMessage());
+            throw new RuntimeException("Failed to post video", e);
         }
     }
 }

@@ -49,7 +49,7 @@ public class YouTubeService {
             "式輿防衛戰", "零號空洞", "幽境危戰", "異相仲裁", "擬真鏖戰試煉", "危局強襲戰");
 
     public void uploadVideo(String filePath, String title, String description, String playlist, String visibility,
-            List<String> hashtags) {
+            List<String> hashtags, boolean keepOpenOnFailure) {
         String finalDescription = buildDescription(title, description, hashtags);
         WebDriver driver = null;
         boolean success = false;
@@ -71,11 +71,13 @@ public class YouTubeService {
         } catch (Exception e) {
             log.error("Error during YouTube upload", e);
         } finally {
-            if (driver != null && success) {
-                driver.quit();
-                log.info("Browser closed successfully.");
-            } else if (driver != null) {
-                log.warn("Browser left open for debugging.");
+            if (driver != null) {
+                if (success || !keepOpenOnFailure) {
+                    driver.quit();
+                    log.info("Browser closed successfully.");
+                } else {
+                    log.warn("Browser left open for debugging.");
+                }
             }
         }
     }

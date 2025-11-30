@@ -26,7 +26,8 @@ public class BilibiliService {
             "深境螺旋", "幻想真境劇詩", "虛構敘事", "忘卻之庭", "末日幻影",
             "式輿防衛戰", "零號空洞", "幽境危戰", "異相仲裁", "擬真鏖戰試煉", "危局強襲戰");
 
-    public void uploadVideo(String filePath, String title, String description, List<String> hashtags) {
+    public void uploadVideo(String filePath, String title, String description, List<String> hashtags,
+            boolean keepOpenOnFailure) {
         String simplifiedTitle = ZhConverterUtil.toSimple(title);
         String finalDescription = buildDescription(title, description, hashtags);
 
@@ -46,11 +47,13 @@ public class BilibiliService {
         } catch (Exception e) {
             log.error("Error during Bilibili upload", e);
         } finally {
-            if (driver != null && success) {
-                driver.quit();
-                log.info("Browser closed successfully.");
-            } else if (driver != null) {
-                log.warn("Browser left open for debugging.");
+            if (driver != null) {
+                if (success || !keepOpenOnFailure) {
+                    driver.quit();
+                    log.info("Browser closed successfully.");
+                } else {
+                    log.warn("Browser left open for debugging.");
+                }
             }
         }
     }
@@ -201,20 +204,43 @@ public class BilibiliService {
     private void setDescription(WebDriver driver, String description) {
         log.info("尋找 說明輸入框 位置中");
         try {
-            By selector = By.xpath("//div[contains(@class, 'ql-editor') and @contenteditable='true']");
+            // Use CSS selector for better readability and precision with attributes
+            // matching the user's provided HTML
+            By selector = By.cssSelector("div.ql-editor[contenteditable='true'][data-placeholder*='填写更全面的相关信息']");
+
             WebElement descInput = new WebDriverWait(driver, Duration.ofSeconds(30))
                     .until(ExpectedConditions.presenceOfElementLocated(selector));
             log.info("已找到 說明輸入框 : {}", selector);
-            log.info("執行 設定說明 操作");
-            descInput.click();
-            // Clear existing content
-            descInput.sendKeys(Keys.CONTROL + "a");
-            descInput.sendKeys(Keys.BACK_SPACE);
 
-            descInput.sendKeys(description);
+            log.info("執行 設定說明 操作 (使用 JS)");
+
+            // Focus first
+            try {
+                descInput.click();
+            } catch (Exception ignored) {
+            }
+
+            // Use JS to set content directly
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+            // Escape description for JS string just in case, though arguments handling
+            // usually covers it
+            // We wrap it in <p> tags as that's the default structure
+            js.executeScript("arguments[0].innerHTML = '<p>' + arguments[1] + '</p>';", descInput, description);
+
+            // Trigger input event to ensure the frontend framework detects the change
+            js.executeScript("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", descInput);
+
             log.info("Description set.");
         } catch (Exception e) {
             log.warn("Could not set description: {}", e.getMessage());
+            // Fallback to previous method if JS fails for some reason
+            try {
+                By fallbackSelector = By.xpath("//div[contains(@class, 'ql-editor') and @contenteditable='true']");
+                WebElement fallbackInput = driver.findElement(fallbackSelector);
+                fallbackInput.sendKeys(description);
+            } catch (Exception ex) {
+                log.error("Fallback description set failed", ex);
+            }
         }
     }
 

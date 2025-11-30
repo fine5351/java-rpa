@@ -26,7 +26,8 @@ public class XiaohongshuService {
             "深境螺旋", "幻想真境劇詩", "虛構敘事", "忘卻之庭", "末日幻影",
             "式輿防衛戰", "零號空洞", "幽境危戰", "異相仲裁", "擬真鏖戰試煉", "危局強襲戰");
 
-    public void uploadVideo(String filePath, String title, String description, List<String> hashtags) {
+    public void uploadVideo(String filePath, String title, String description, List<String> hashtags,
+            boolean keepOpenOnFailure) {
         String simplifiedTitle = ZhConverterUtil.toSimple(title);
         String finalDescription = buildDescription(title, description, hashtags);
         String simplifiedDescription = ZhConverterUtil.toSimple(finalDescription);
@@ -49,11 +50,13 @@ public class XiaohongshuService {
         } catch (Exception e) {
             log.error("Error during Xiaohongshu upload", e);
         } finally {
-            if (driver != null && success) {
-                driver.quit();
-                log.info("Browser closed successfully.");
-            } else if (driver != null) {
-                log.warn("Browser left open for debugging.");
+            if (driver != null) {
+                if (success || !keepOpenOnFailure) {
+                    driver.quit();
+                    log.info("Browser closed successfully.");
+                } else {
+                    log.warn("Browser left open for debugging.");
+                }
             }
         }
     }
@@ -276,43 +279,42 @@ public class XiaohongshuService {
     }
 
     private void clickPublish(WebDriver driver) {
-        log.info("尋找 發佈按鈕 位置中");
+        log.info("尋找 發佈按鈕 (使用 class 'publishBtn')");
+        try {
+            // Use CSS selector for the specific button class provided by user
+            By selector = By.cssSelector("button.publishBtn");
 
-        WebElement publishBtn = null;
+            // Wait for at least one element to be present
+            new WebDriverWait(driver, Duration.ofSeconds(10))
+                    .until(ExpectedConditions.presenceOfElementLocated(selector));
 
-        // Try multiple selectors with fallback strategy
-        By[] selectors = {
-                // Primary selector: exact match from user's HTML
-                By.xpath("//div[@class='d-button-content']//span[contains(text(), '发布')]"),
-                // Fallback 1: contains class instead of exact match
-                By.xpath("//div[contains(@class, 'd-button-content')]//span[contains(text(), '发布')]"),
-                // Fallback 2: include English text
-                By.xpath(
-                        "//div[contains(@class, 'd-button-content')]//span[contains(text(), '发布') or contains(text(), 'Publish')]"),
-                // Fallback 3: direct span search
-                By.xpath("//span[contains(@class, 'd-text') and contains(text(), '发布')]")
-        };
+            List<WebElement> elements = driver.findElements(selector);
+            log.info("Found {} elements with class 'publishBtn'", elements.size());
 
-        for (int i = 0; i < selectors.length; i++) {
-            try {
-                log.info("嘗試選擇器 {} : {}", i + 1, selectors[i]);
-                publishBtn = new WebDriverWait(driver, Duration.ofSeconds(10))
-                        .until(ExpectedConditions.elementToBeClickable(selectors[i]));
-                log.info("已找到 發佈按鈕 使用選擇器 {} : {}", i + 1, selectors[i]);
-                break;
-            } catch (Exception e) {
-                log.warn("選擇器 {} 失敗: {}", i + 1, e.getMessage());
-                if (i == selectors.length - 1) {
-                    log.error("所有選擇器都失敗，無法找到發佈按鈕");
-                    throw new RuntimeException("Could not find publish button with any selector", e);
+            WebElement publishBtn = null;
+            for (WebElement el : elements) {
+                try {
+                    if (el.isDisplayed()) {
+                        log.info("Found visible candidate: <{}> text='{}'", el.getTagName(), el.getText());
+                        publishBtn = el;
+                        break;
+                    }
+                } catch (Exception ignored) {
                 }
             }
-        }
 
-        if (publishBtn != null) {
-            try {
+            if (publishBtn != null) {
                 // Scroll to view
                 ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", publishBtn);
+
+                // Wait for it to be clickable
+                try {
+                    WebElement finalBtn = publishBtn;
+                    new WebDriverWait(driver, Duration.ofSeconds(10))
+                            .until(ExpectedConditions.elementToBeClickable(finalBtn));
+                } catch (Exception e) {
+                    log.warn("Timed out waiting for element to be clickable, trying to click anyway.");
+                }
 
                 log.info("執行 點擊發佈 操作");
                 publishBtn.click();
@@ -326,16 +328,20 @@ public class XiaohongshuService {
                             .until(ExpectedConditions.presenceOfElementLocated(successSelector));
                     log.info("Success indicator found: {}", successElement.getText());
 
-                    // Wait 2 seconds before closing
-                    log.info("Waiting 2 seconds before closing...");
-                    Thread.sleep(2000);
+                    // Wait 3 seconds before closing
+                    log.info("Waiting 3 seconds before closing...");
+                    Thread.sleep(3000);
                 } catch (Exception e) {
                     log.warn("Could not find success indicator: {}", e.getMessage());
+                    throw new RuntimeException("Upload success indicator not found", e);
                 }
-            } catch (Exception e) {
-                log.error("Could not click Publish button: {}", e.getMessage());
-                throw new RuntimeException("Failed to click publish button", e);
+            } else {
+                log.error("No visible element found with class 'publishBtn'");
+                throw new RuntimeException("No visible element found with class 'publishBtn'");
             }
+        } catch (Exception e) {
+            log.error("Could not click Publish button: {}", e.getMessage());
+            throw new RuntimeException("Failed to click publish button", e);
         }
     }
 
