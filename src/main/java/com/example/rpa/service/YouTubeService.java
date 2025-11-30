@@ -86,20 +86,23 @@ public class YouTubeService {
         if (description == null)
             description = "";
 
-        if (title != null) {
-            for (String keyword : AUTO_HASHTAG_KEYWORDS) {
-                if (title.contains(keyword)) {
-                    description += " #" + keyword;
-                }
-            }
-        }
+        description += "\n\n";
 
         if (hashtags != null) {
             for (String tag : hashtags) {
                 if (!description.contains(tag))
-                    description += " " + tag;
+                    description += "#" + tag + " ";
             }
         }
+
+        if (title != null) {
+            for (String keyword : AUTO_HASHTAG_KEYWORDS) {
+                if (title.contains(keyword)) {
+                    description += "#" + keyword + " ";
+                }
+            }
+        }
+
         return description;
     }
 

@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Set;
-
 @Slf4j
 @RestController
 @RequestMapping("/api")
@@ -45,8 +43,6 @@ public class UploadController {
                         request.getDescription(),
                         request.getPlaylist(),
                         request.getVisibility(),
-                        request.getPlaylist(),
-                        request.getVisibility(),
                         request.getHashtags(),
                         true);
             } catch (Exception e) {
@@ -67,7 +63,6 @@ public class UploadController {
                         request.getTitle(),
                         request.getDescription(),
                         request.getVisibility(),
-                        request.getVisibility(),
                         request.getHashtags(),
                         true);
             } catch (Exception e) {
@@ -87,8 +82,6 @@ public class UploadController {
                         request.getFilePath(),
                         request.getTitle(),
                         request.getDescription(),
-                        request.getTitle(),
-                        request.getDescription(),
                         request.getHashtags(),
                         true);
             } catch (Exception e) {
@@ -106,8 +99,6 @@ public class UploadController {
             try {
                 bilibiliService.uploadVideo(
                         request.getFilePath(),
-                        request.getTitle(),
-                        request.getDescription(),
                         request.getTitle(),
                         request.getDescription(),
                         request.getHashtags(),

@@ -72,7 +72,8 @@ public class MultiPlatformUploadService {
                         file.getAbsolutePath(),
                         title,
                         request.getDescription(),
-                        null // Hashtags
+                        null, // Hashtags
+                        false // keepOpenOnFailure
                 );
             } catch (Exception e) {
                 log.error("Failed to upload to Bilibili: {}", title, e);
@@ -85,7 +86,8 @@ public class MultiPlatformUploadService {
                         file.getAbsolutePath(),
                         title,
                         request.getDescription(),
-                        null // Hashtags
+                        null, // Hashtags
+                        false // keepOpenOnFailure
                 );
             } catch (Exception e) {
                 log.error("Failed to upload to Xiaohongshu: {}", title, e);
@@ -97,7 +99,6 @@ public class MultiPlatformUploadService {
                 tikTokService.uploadVideo(
                         file.getAbsolutePath(),
                         title,
-                        request.getDescription(),
                         request.getDescription(),
                         "PUBLIC",
                         null, // Hashtags
