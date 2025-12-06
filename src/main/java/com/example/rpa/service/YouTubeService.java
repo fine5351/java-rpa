@@ -59,8 +59,6 @@ public class YouTubeService {
             clickCreateButton(driver);
             selectUploadOption(driver);
             uploadFile(driver, filePath);
-            // Thread.sleep(5000); // Wait for wizard - removed, handled by
-            // enterTitleAndDescription waiting for elements
             enterTitleAndDescription(driver, title, finalDescription);
             selectPlaylist(driver, playlist);
             setKidsRestriction(driver);

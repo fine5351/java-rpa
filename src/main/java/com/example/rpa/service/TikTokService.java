@@ -182,7 +182,7 @@ public class TikTokService {
             String[] parts = caption.split(" ");
             for (String part : parts) {
                 editor.sendKeys(part);
-                editor.sendKeys(" ");
+                Thread.sleep(2000);
                 if (part.startsWith("#")) {
                     try {
                         log.info("尋找 標籤建議 位置中");
@@ -196,6 +196,7 @@ public class TikTokService {
                         // No suggestion or timeout, just continue
                     }
                 }
+                editor.sendKeys(" ");
             }
             log.info("Caption set.");
         } catch (Exception e) {

@@ -44,13 +44,3 @@ Content-Type: application/json
   "visibility": "PUBLIC",
   "hashtags": ["絕區零", "ZenlessZoneZero", "將臨未抵的深淵"]
 }
-
-### Batch Upload
-POST http://localhost:8080/api/batch/upload
-Content-Type: application/json
-
-{
-  "folderPath": "D:\\Download\\2.4-將臨未抵的深淵",
-  "description": "劇情\r\n",
-  "playlist": "絕區零"
-}

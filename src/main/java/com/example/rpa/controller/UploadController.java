@@ -39,7 +39,7 @@ public class UploadController {
             try {
                 youTubeService.uploadVideo(
                         request.getFilePath(),
-                        request.getTitle(),
+                        getFileNameWithoutExtension(request.getFilePath()),
                         request.getDescription(),
                         request.getPlaylist(),
                         request.getVisibility(),
@@ -60,7 +60,7 @@ public class UploadController {
             try {
                 tikTokService.uploadVideo(
                         request.getFilePath(),
-                        request.getTitle(),
+                        getFileNameWithoutExtension(request.getFilePath()),
                         request.getDescription(),
                         request.getVisibility(),
                         request.getHashtags(),
@@ -80,7 +80,7 @@ public class UploadController {
             try {
                 xiaohongshuService.uploadVideo(
                         request.getFilePath(),
-                        request.getTitle(),
+                        getFileNameWithoutExtension(request.getFilePath()),
                         request.getDescription(),
                         request.getHashtags(),
                         true);
@@ -99,7 +99,7 @@ public class UploadController {
             try {
                 bilibiliService.uploadVideo(
                         request.getFilePath(),
-                        request.getTitle(),
+                        getFileNameWithoutExtension(request.getFilePath()),
                         request.getDescription(),
                         request.getHashtags(),
                         true);
@@ -111,21 +111,14 @@ public class UploadController {
         return "Bilibili Upload started! Check the browser window.";
     }
 
-    @Autowired
-    private com.example.rpa.service.MultiPlatformUploadService multiPlatformUploadService;
-
-    @PostMapping("/batch/upload")
-    public String batchUpload(@RequestBody com.example.rpa.dto.BatchUploadRequest request) {
-        log.info("Received batch upload request: {}", request);
-        new Thread(() -> {
-            try {
-                multiPlatformUploadService.uploadFromFolder(request);
-            } catch (Exception e) {
-                log.error("Error during batch upload", e);
-            }
-        }).start();
-
-        return "Batch Upload started! Check the logs for progress.";
+    private String getFileNameWithoutExtension(String filePath) {
+        if (filePath == null || filePath.isEmpty()) {
+            return "";
+        }
+        java.io.File file = new java.io.File(filePath);
+        String fileName = file.getName();
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
     }
 
 }

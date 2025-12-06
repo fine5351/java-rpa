@@ -183,12 +183,12 @@ public class XiaohongshuService {
             String[] parts = description.split(" ");
             for (String part : parts) {
                 descInput.sendKeys(part);
-                descInput.sendKeys(" ");
+                Thread.sleep(2000);
                 if (part.startsWith("#")) {
                     try {
                         log.info("尋找 標籤建議 位置中");
                         By suggestionSelector = By
-                                .xpath("//div[@id='creator-editor-topic-container']//div[contains(@class, 'item')]");
+                                .xpath("/html/body/div[16]/div/div[1]/div/div/div[1]");
                         List<WebElement> suggestions = new WebDriverWait(driver, Duration.ofSeconds(5))
                                 .until(ExpectedConditions.presenceOfAllElementsLocatedBy(suggestionSelector));
                         log.info("已找到 標籤建議 : {}", suggestionSelector);
@@ -203,12 +203,14 @@ public class XiaohongshuService {
 
                                 if (name.equals(part)) {
                                     long views = parseViews(numText);
+                                    log.info("瀏覽人數: {}", views);
                                     if (views > maxViews) {
                                         maxViews = views;
                                         bestMatch = item;
                                     }
                                 }
                             } catch (Exception ignored) {
+                                log.warn("Could not parse views: {}", ignored.getMessage());
                             }
                         }
 
@@ -220,6 +222,7 @@ public class XiaohongshuService {
                             log.info("執行 點擊首個建議 操作");
                             suggestions.get(0).click();
                         }
+                        descInput.sendKeys(" ");
 
                     } catch (Exception ignored) {
                         // No suggestion or timeout, just continue

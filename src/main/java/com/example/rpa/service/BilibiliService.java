@@ -28,7 +28,7 @@ public class BilibiliService {
 
     public void uploadVideo(String filePath, String title, String description, List<String> hashtags,
             boolean keepOpenOnFailure) {
-        String simplifiedTitle = ZhConverterUtil.toSimple(title);
+        String simplifiedTitle = (title);
         String finalDescription = buildDescription(title, description, hashtags);
 
         WebDriver driver = null;
@@ -76,7 +76,7 @@ public class BilibiliService {
                     desc += " #" + tag;
             }
         }
-        return desc.trim();
+        return ZhConverterUtil.toSimple(desc.trim());
     }
 
     private WebDriver initializeDriver() {
@@ -291,18 +291,30 @@ public class BilibiliService {
 
     private void waitForSuccess(WebDriver driver) {
         log.info("Waiting for success...");
-        try {
-            // Wait for success message "稿件投递成功"
-            By successSelector = By.xpath("//div[contains(@class, 'step-des') and contains(text(), '稿件投递成功')]");
-            WebElement successElement = new WebDriverWait(driver, Duration.ofSeconds(60))
-                    .until(ExpectedConditions.presenceOfElementLocated(successSelector));
-            log.info("Success indicator found: {}", successElement.getText());
+        By successSelector = By.xpath("//div[contains(@class, 'step-des') and contains(text(), '稿件投递成功')]");
 
-            // Wait 2 seconds before closing
-            log.info("Waiting 2 seconds before closing...");
-            Thread.sleep(2000);
-        } catch (Exception e) {
-            log.warn("Could not find success indicator: {}", e.getMessage());
+        while (true) {
+            try {
+                // Use a shorter wait for each attempt within the continuous loop
+                WebElement successElement = new WebDriverWait(driver, Duration.ofSeconds(10))
+                        .until(ExpectedConditions.presenceOfElementLocated(successSelector));
+
+                log.info("Success indicator found: {}", successElement.getText());
+                // Wait 2 seconds before closing
+                log.info("Waiting 2 seconds before closing...");
+                Thread.sleep(2000);
+                break; // Exit loop if success indicator is found
+            } catch (Exception e) {
+                // If element is not found within the 10-second wait, log info and retry
+                log.info("Still waiting for success indicator. Retrying in 5 seconds...");
+                try {
+                    Thread.sleep(5000); // Wait before the next attempt
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    log.error("Waiting for success interrupted.", ex);
+                    break; // Exit if interrupted
+                }
+            }
         }
     }
 }

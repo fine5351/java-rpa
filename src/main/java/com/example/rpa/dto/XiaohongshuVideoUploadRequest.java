@@ -7,7 +7,6 @@ import java.util.List;
 @Data
 public class XiaohongshuVideoUploadRequest {
     private String filePath;
-    private String title;
     private String description;
     private String visibility;
     private List<String> hashtags;
