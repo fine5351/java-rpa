@@ -13,6 +13,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
+import com.example.rpa.constant.AutoAppendHashtag;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -22,13 +23,10 @@ import java.util.List;
 @Service
 public class BilibiliService {
 
-    private static final List<String> AUTO_HASHTAG_KEYWORDS = List.of(
-            "深境螺旋", "幻想真境劇詩", "虛構敘事", "忘卻之庭", "末日幻影",
-            "式輿防衛戰", "零號空洞", "幽境危戰", "異相仲裁", "擬真鏖戰試煉", "危局強襲戰");
-
     public void uploadVideo(String filePath, String title, String description, List<String> hashtags,
             boolean keepOpenOnFailure) {
         String simplifiedTitle = (title);
+
         String finalDescription = buildDescription(title, description, hashtags);
 
         WebDriver driver = null;
@@ -64,9 +62,11 @@ public class BilibiliService {
             desc += description + "\n";
 
         if (title != null) {
-            for (String keyword : AUTO_HASHTAG_KEYWORDS) {
-                if (title.contains(keyword))
+            for (String keyword : AutoAppendHashtag.AUTO_HASHTAG_KEYWORDS) {
+                if (title.contains(keyword)) {
                     desc += " #" + keyword;
+                    hashtags.add(keyword);
+                }
             }
         }
 
@@ -120,17 +120,17 @@ public class BilibiliService {
                 log.info("仍未找到檔案輸入框，嘗試點擊上傳區域以觸發...");
                 // If not found, try clicking the upload area to trigger it
                 By uploadAreaSelector = By.xpath("//div[contains(@class, 'upload-area')]");
-                WebElement uploadArea = new WebDriverWait(driver, Duration.ofSeconds(10))
-                        .until(ExpectedConditions.elementToBeClickable(uploadAreaSelector));
-                log.info("已找到 上傳區域 : {}", uploadAreaSelector);
+
+                // Infinite wait for upload area
+                WebElement uploadArea = findClickableElement(driver, uploadAreaSelector, "上傳區域");
+
                 log.info("執行 點擊上傳區域 操作");
                 uploadArea.click();
 
-                // Wait for input to appear
+                // Wait for input to appear (Infinite wait)
                 log.info("等待檔案輸入框出現...");
-                WebElement fileInput = new WebDriverWait(driver, Duration.ofSeconds(5))
-                        .until(ExpectedConditions.presenceOfElementLocated(globalInputSelector));
-                log.info("已找到 上傳按鈕 (觸發後) : {}", globalInputSelector);
+                WebElement fileInput = findElement(driver, globalInputSelector, "上傳按鈕 (觸發後)");
+
                 log.info("執行 上傳檔案 操作");
                 fileInput.sendKeys(filePath);
             } else {
@@ -181,12 +181,10 @@ public class BilibiliService {
     }
 
     private void setTitle(WebDriver driver, String title) {
-        log.info("尋找 標題輸入框 位置中");
         try {
             By selector = By.xpath("//input[contains(@placeholder, '标题') or contains(@placeholder, 'Title')]");
-            WebElement titleInput = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.presenceOfElementLocated(selector));
-            log.info("已找到 標題輸入框 : {}", selector);
+            WebElement titleInput = findElement(driver, selector, "標題輸入框");
+
             log.info("執行 設定標題 操作");
 
             // Clear existing title (Bilibili might auto-fill from filename)
@@ -202,15 +200,12 @@ public class BilibiliService {
     }
 
     private void setDescription(WebDriver driver, String description) {
-        log.info("尋找 說明輸入框 位置中");
         try {
             // Use CSS selector for better readability and precision with attributes
             // matching the user's provided HTML
             By selector = By.cssSelector("div.ql-editor[contenteditable='true'][data-placeholder*='填写更全面的相关信息']");
 
-            WebElement descInput = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.presenceOfElementLocated(selector));
-            log.info("已找到 說明輸入框 : {}", selector);
+            WebElement descInput = findElement(driver, selector, "說明輸入框");
 
             log.info("執行 設定說明 操作 (使用 JS)");
 
@@ -248,18 +243,16 @@ public class BilibiliService {
         if (hashtags == null || hashtags.isEmpty())
             return;
 
-        log.info("尋找 標籤輸入框 位置中");
         try {
             // Updated selector based on user feedback
             By selector = By.xpath("//input[contains(@class, 'input-val') and contains(@placeholder, '创建标签')]");
-            WebElement tagInput = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.presenceOfElementLocated(selector));
-            log.info("已找到 標籤輸入框 : {}", selector);
+            WebElement tagInput = findElement(driver, selector, "標籤輸入框");
 
             for (String tag : hashtags) {
                 log.info("執行 設定標籤 操作");
                 String simplifiedTag = ZhConverterUtil.toSimple(tag);
                 tagInput.sendKeys(simplifiedTag);
+                log.info("標籤輸入: {}", simplifiedTag);
                 tagInput.sendKeys(Keys.ENTER);
                 // Small delay to ensure tag is registered
                 Thread.sleep(500);
@@ -271,12 +264,9 @@ public class BilibiliService {
     }
 
     private void clickSubmit(WebDriver driver) {
-        log.info("尋找 發佈按鈕 位置中");
         try {
             By selector = By.xpath("//span[contains(text(), '立即投稿') or contains(text(), 'Submit')]");
-            WebElement submitBtn = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.elementToBeClickable(selector));
-            log.info("已找到 發佈按鈕 : {}", selector);
+            WebElement submitBtn = findClickableElement(driver, selector, "發佈按鈕");
 
             // Scroll to view
             ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", submitBtn);
@@ -292,27 +282,52 @@ public class BilibiliService {
     private void waitForSuccess(WebDriver driver) {
         log.info("Waiting for success...");
         By successSelector = By.xpath("//div[contains(@class, 'step-des') and contains(text(), '稿件投递成功')]");
+        findElement(driver, successSelector, "成功訊息");
+        log.info("Success indicator found.");
+        // Wait 2 seconds before closing
+        log.info("Waiting 2 seconds before closing...");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
 
+    private WebElement findElement(WebDriver driver, By selector, String description) {
+        log.info("尋找 {} 位置中", description);
         while (true) {
             try {
-                // Use a shorter wait for each attempt within the continuous loop
-                WebElement successElement = new WebDriverWait(driver, Duration.ofSeconds(10))
-                        .until(ExpectedConditions.presenceOfElementLocated(successSelector));
-
-                log.info("Success indicator found: {}", successElement.getText());
-                // Wait 2 seconds before closing
-                log.info("Waiting 2 seconds before closing...");
-                Thread.sleep(2000);
-                break; // Exit loop if success indicator is found
+                WebElement element = new WebDriverWait(driver, Duration.ofSeconds(5))
+                        .until(ExpectedConditions.presenceOfElementLocated(selector));
+                log.info("已找到 {} : {}", description, selector);
+                return element;
             } catch (Exception e) {
-                // If element is not found within the 10-second wait, log info and retry
-                log.info("Still waiting for success indicator. Retrying in 5 seconds...");
+                log.info("找不到 {}, 持續尋找中...", description);
                 try {
-                    Thread.sleep(5000); // Wait before the next attempt
+                    Thread.sleep(2000);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    log.error("Waiting for success interrupted.", ex);
-                    break; // Exit if interrupted
+                    throw new RuntimeException("Interrupted while waiting for " + description, ex);
+                }
+            }
+        }
+    }
+
+    private WebElement findClickableElement(WebDriver driver, By selector, String description) {
+        log.info("尋找 {} 位置中", description);
+        while (true) {
+            try {
+                WebElement element = new WebDriverWait(driver, Duration.ofSeconds(5))
+                        .until(ExpectedConditions.elementToBeClickable(selector));
+                log.info("已找到 {} : {}", description, selector);
+                return element;
+            } catch (Exception e) {
+                log.info("找不到 {}, 持續尋找中...", description);
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted while waiting for " + description, ex);
                 }
             }
         }

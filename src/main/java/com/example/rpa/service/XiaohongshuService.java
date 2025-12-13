@@ -1,5 +1,6 @@
 package com.example.rpa.service;
 
+import com.example.rpa.constant.AutoAppendHashtag;
 import com.github.houbb.opencc4j.util.ZhConverterUtil;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +22,6 @@ import java.util.List;
 @Slf4j
 @Service
 public class XiaohongshuService {
-
-    private static final List<String> AUTO_HASHTAG_KEYWORDS = List.of(
-            "深境螺旋", "幻想真境劇詩", "虛構敘事", "忘卻之庭", "末日幻影",
-            "式輿防衛戰", "零號空洞", "幽境危戰", "異相仲裁", "擬真鏖戰試煉", "危局強襲戰");
 
     public void uploadVideo(String filePath, String title, String description, List<String> hashtags,
             boolean keepOpenOnFailure) {
@@ -67,7 +64,7 @@ public class XiaohongshuService {
             desc += description + "\n";
 
         if (title != null) {
-            for (String keyword : AUTO_HASHTAG_KEYWORDS) {
+            for (String keyword : AutoAppendHashtag.AUTO_HASHTAG_KEYWORDS) {
                 if (title.contains(keyword))
                     desc += " #" + keyword;
             }
@@ -103,9 +100,7 @@ public class XiaohongshuService {
         log.info("尋找 上傳按鈕 位置中");
         try {
             By selector = By.xpath("//input[@type='file']");
-            WebElement fileInput = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.presenceOfElementLocated(selector));
-            log.info("已找到 上傳按鈕 : {}", selector);
+            WebElement fileInput = findElement(driver, selector, "上傳按鈕");
             log.info("執行 上傳檔案 操作");
             fileInput.sendKeys(filePath);
         } catch (Exception e) {
@@ -151,12 +146,9 @@ public class XiaohongshuService {
     }
 
     private void setTitle(WebDriver driver, String title) {
-        log.info("尋找 標題輸入框 位置中");
         try {
             By selector = By.xpath("//input[contains(@placeholder, '填写标题') or contains(@placeholder, '標題')]");
-            WebElement titleInput = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.presenceOfElementLocated(selector));
-            log.info("已找到 標題輸入框 : {}", selector);
+            WebElement titleInput = findElement(driver, selector, "標題輸入框");
             log.info("執行 設定標題 操作");
             titleInput.click();
             titleInput.sendKeys(Keys.CONTROL + "a");
@@ -169,13 +161,10 @@ public class XiaohongshuService {
     }
 
     private void setDescription(WebDriver driver, String description) {
-        log.info("尋找 說明輸入框 位置中");
         try {
             By selector = By.xpath(
                     "//div[contains(@class, 'tiptap') and contains(@class, 'ProseMirror') and @contenteditable='true']");
-            WebElement descInput = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.presenceOfElementLocated(selector));
-            log.info("已找到 說明輸入框 : {}", selector);
+            WebElement descInput = findElement(driver, selector, "說明輸入框");
             log.info("執行 設定說明 操作");
             descInput.click();
 
@@ -283,86 +272,92 @@ public class XiaohongshuService {
 
     private void clickPublish(WebDriver driver) {
         log.info("尋找 發佈按鈕 (使用 class 'publishBtn')");
-        try {
-            // Use CSS selector for the specific button class provided by user
-            By selector = By.cssSelector("button.publishBtn");
+        By selector = By.cssSelector("button.publishBtn");
 
-            // Wait for at least one element to be present
-            new WebDriverWait(driver, Duration.ofSeconds(10))
-                    .until(ExpectedConditions.presenceOfElementLocated(selector));
+        while (true) {
+            try {
+                // Wait for at least one element to be present (short wait)
+                new WebDriverWait(driver, Duration.ofSeconds(5))
+                        .until(ExpectedConditions.presenceOfElementLocated(selector));
 
-            List<WebElement> elements = driver.findElements(selector);
-            log.info("Found {} elements with class 'publishBtn'", elements.size());
-
-            WebElement publishBtn = null;
-            for (WebElement el : elements) {
-                try {
+                List<WebElement> elements = driver.findElements(selector);
+                WebElement publishBtn = null;
+                for (WebElement el : elements) {
                     if (el.isDisplayed()) {
-                        log.info("Found visible candidate: <{}> text='{}'", el.getTagName(), el.getText());
                         publishBtn = el;
                         break;
                     }
-                } catch (Exception ignored) {
-                }
-            }
-
-            if (publishBtn != null) {
-                // Scroll to view
-                ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", publishBtn);
-
-                // Wait for it to be clickable
-                try {
-                    WebElement finalBtn = publishBtn;
-                    new WebDriverWait(driver, Duration.ofSeconds(10))
-                            .until(ExpectedConditions.elementToBeClickable(finalBtn));
-                } catch (Exception e) {
-                    log.warn("Timed out waiting for element to be clickable, trying to click anyway.");
                 }
 
-                log.info("執行 點擊發佈 操作");
-                publishBtn.click();
-                log.info("Clicked Publish.");
+                if (publishBtn != null) {
+                    ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", publishBtn);
+                    new WebDriverWait(driver, Duration.ofSeconds(5))
+                            .until(ExpectedConditions.elementToBeClickable(publishBtn));
 
-                // Wait for success
-                try {
-                    By successSelector = By
-                            .xpath("//*[contains(text(), '发布成功') or contains(text(), 'Publish success')]");
-                    WebElement successElement = new WebDriverWait(driver, Duration.ofSeconds(10))
-                            .until(ExpectedConditions.presenceOfElementLocated(successSelector));
-                    log.info("Success indicator found: {}", successElement.getText());
-                } catch (Exception e) {
-                    log.warn("Success indicator not found: {}", e.getMessage());
-                    // Fallback: check if publish button is gone
+                    log.info("執行 點擊發佈 操作");
+                    publishBtn.click();
+                    log.info("Clicked Publish.");
+
+                    // Check for success or button gone
                     try {
-                        log.info("Checking if publish button is gone...");
-                        boolean btnStillVisible = !driver.findElements(selector).isEmpty()
-                                && driver.findElement(selector).isDisplayed();
-                        if (btnStillVisible) {
-                            log.error("Publish button is still visible. Upload might have failed.");
-                            throw new RuntimeException("Publish button still visible after click");
-                        } else {
+                        By successSelector = By
+                                .xpath("//*[contains(text(), '发布成功') or contains(text(), 'Publish success')]");
+                        WebElement successElement = new WebDriverWait(driver, Duration.ofSeconds(10))
+                                .until(ExpectedConditions.presenceOfElementLocated(successSelector));
+                        log.info("Success indicator found: {}", successElement.getText());
+                        break; // Success
+                    } catch (Exception e) {
+                        try {
+                            boolean btnStillVisible = !driver.findElements(selector).isEmpty()
+                                    && driver.findElement(selector).isDisplayed();
+                            if (!btnStillVisible) {
+                                log.info("Publish button is gone. Assuming success.");
+                                break; // Success
+                            }
+                        } catch (Exception ex) {
                             log.info("Publish button is gone. Assuming success.");
+                            break; // Success
                         }
-                    } catch (Exception ex) {
-                        // If findElement throws, it means it's gone (good)
-                        log.info("Publish button is gone (exception). Assuming success.");
                     }
                 }
-
-                // Wait a bit before closing
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-
-            } else {
-                log.error("No visible element found with class 'publishBtn'");
-                throw new RuntimeException("No visible element found with class 'publishBtn'");
+            } catch (Exception e) {
+                // Ignore and retry
             }
-        } catch (Exception e) {
-            log.error("Could not click Publish button: {}", e.getMessage());
-            throw new RuntimeException("Failed to click publish button", e);
+
+            log.info("找不到或無法點擊發佈按鈕, 持續尋找中...");
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+
+        // Wait a bit before closing
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private WebElement findElement(WebDriver driver, By selector, String description) {
+        log.info("尋找 {} 位置中", description);
+        while (true) {
+            try {
+                WebElement element = new WebDriverWait(driver, Duration.ofSeconds(5))
+                        .until(ExpectedConditions.presenceOfElementLocated(selector));
+                log.info("已找到 {} : {}", description, selector);
+                return element;
+            } catch (Exception e) {
+                log.info("找不到 {}, 持續尋找中...", description);
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted while waiting for " + description, ex);
+                }
+            }
         }
     }
 

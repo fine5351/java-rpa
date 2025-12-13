@@ -12,6 +12,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
 
+import com.example.rpa.constant.AutoAppendHashtag;
+
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -19,10 +21,6 @@ import java.util.List;
 @Slf4j
 @Service
 public class TikTokService {
-
-    private static final List<String> AUTO_HASHTAG_KEYWORDS = List.of(
-            "深境螺旋", "幻想真境劇詩", "虛構敘事", "忘卻之庭", "末日幻影",
-            "式輿防衛戰", "零號空洞", "幽境危戰", "異相仲裁", "擬真鏖戰試煉", "危局強襲戰");
 
     public void uploadVideo(String filePath, String title, String description, String visibility,
             List<String> hashtags, boolean keepOpenOnFailure) {
@@ -37,7 +35,6 @@ public class TikTokService {
             uploadFile(driver, filePath);
             waitForUploadComplete(driver);
             setCaption(driver, finalCaption);
-            setVisibility(driver, visibility);
             postVideo(driver);
             success = true;
         } catch (Exception e) {
@@ -62,7 +59,7 @@ public class TikTokService {
             caption += description + "\n";
 
         if (title != null) {
-            for (String keyword : AUTO_HASHTAG_KEYWORDS) {
+            for (String keyword : AutoAppendHashtag.AUTO_HASHTAG_KEYWORDS) {
                 if (title.contains(keyword)) {
                     String hashtag = " #" + keyword;
                     if (!caption.contains(hashtag))
@@ -102,9 +99,7 @@ public class TikTokService {
         log.info("尋找 上傳按鈕 位置中");
         try {
             By selector = By.xpath("//input[@type='file']");
-            WebElement fileInput = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.presenceOfElementLocated(selector));
-            log.info("已找到 上傳按鈕 : {}", selector);
+            WebElement fileInput = findElement(driver, selector, "上傳按鈕");
             log.info("執行 上傳檔案 操作");
             fileInput.sendKeys(filePath);
         } catch (Exception e) {
@@ -167,11 +162,9 @@ public class TikTokService {
     }
 
     private void setCaption(WebDriver driver, String caption) {
-        log.info("尋找 標題輸入框 位置中");
         try {
             By selector = By.xpath("//div[@contenteditable='true']");
-            WebElement editor = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.elementToBeClickable(selector));
+            WebElement editor = findClickableElement(driver, selector, "標題輸入框");
             log.info("已找到 標題輸入框 : {}", selector);
             log.info("執行 設定標題 操作");
             editor.click();
@@ -186,12 +179,95 @@ public class TikTokService {
                 if (part.startsWith("#")) {
                     try {
                         log.info("尋找 標籤建議 位置中");
-                        By suggestionSelector = By.xpath("//div[contains(@class, 'mention-list')]//div[1]");
-                        WebElement suggestion = new WebDriverWait(driver, Duration.ofSeconds(2))
-                                .until(ExpectedConditions.presenceOfElementLocated(suggestionSelector));
-                        log.info("已找到 標籤建議 : {}", suggestionSelector);
-                        log.info("執行 點擊建議 操作");
-                        suggestion.click();
+                        // Wait for the list to appear
+                        By listSelector = By.xpath("//div[contains(@class, 'mention-list')]");
+                        new WebDriverWait(driver, Duration.ofSeconds(5))
+                                .until(ExpectedConditions.presenceOfElementLocated(listSelector));
+
+                        log.info("已找到 標籤建議列表，開始尋找最佳匹配 (Exact match + Max views)...");
+                        // Use more specific selector for items
+                        List<WebElement> suggestions = driver
+                                .findElements(By.xpath("//div[contains(@class, 'hashtag-suggestion-item')]"));
+
+                        log.info("Found {} suggestions", suggestions.size());
+
+                        String targetTag = part.replace("#", "");
+                        WebElement bestMatch = null;
+                        long maxCount = -1;
+
+                        for (WebElement suggestion : suggestions) {
+                            try {
+                                // Extract info from child spans securely
+                                WebElement topicEl = suggestion
+                                        .findElement(By.xpath(".//span[contains(@class, 'hash-tag-topic')]"));
+                                WebElement countEl = suggestion
+                                        .findElement(By.xpath(".//span[contains(@class, 'hash-tag-view-count')]"));
+
+                                String tagName = topicEl.getText().trim();
+                                String countText = countEl.getText().trim();
+
+                                // Parse count logic
+                                long count = 0;
+                                String s = countText.toUpperCase().replaceAll("[^0-9.KMB]", "");
+                                if (!s.isEmpty()) {
+                                    double multiplier = 1;
+                                    if (s.endsWith("K")) {
+                                        multiplier = 1_000;
+                                        s = s.substring(0, s.length() - 1);
+                                    } else if (s.endsWith("M")) {
+                                        multiplier = 1_000_000;
+                                        s = s.substring(0, s.length() - 1);
+                                    } else if (s.endsWith("B")) {
+                                        multiplier = 1_000_000_000;
+                                        s = s.substring(0, s.length() - 1);
+                                    }
+                                    try {
+                                        count = (long) (Double.parseDouble(s) * multiplier);
+                                    } catch (Exception e) {
+                                    }
+                                }
+
+                                String currentTagClean = tagName.replace("#", "");
+
+                                // Log detailed info for debugging
+                                if (log.isDebugEnabled() || true) {
+                                    log.info("Checking: Tag='{}', CountStr='{}', Value={}, HTML={}",
+                                            tagName, countText, count, suggestion.getAttribute("outerHTML"));
+                                }
+
+                                // Check for exact match (case-insensitive)
+                                if (currentTagClean.equalsIgnoreCase(targetTag)) {
+                                    if (count > maxCount) {
+                                        maxCount = count;
+                                        bestMatch = suggestion;
+                                        log.info("New Best Match Found: {} with {} views", tagName, count);
+                                    }
+                                }
+                            } catch (Exception e) {
+                                log.warn("Error parsing suggestion item: {}", e.getMessage());
+                            }
+                        }
+
+                        if (bestMatch != null) {
+                            log.info("執行 點擊最佳匹配建議 操作 (Tag: {}, Views: {})",
+                                    bestMatch.findElement(By.xpath(".//span[contains(@class, 'hash-tag-topic')]"))
+                                            .getText(),
+                                    maxCount);
+                            bestMatch.click();
+                        } else {
+                            // Fallback to the first item if no exact match found
+                            log.info("未找到精確匹配，嘗試點擊第一個建議");
+                            if (!suggestions.isEmpty()) {
+                                WebElement first = suggestions.get(0);
+                                log.info("Fallback clicking element with HTML: {}", first.getAttribute("outerHTML"));
+                                first.click();
+                            } else {
+                                // Try old selector as backup
+                                By firstSuggestionSelector = By
+                                        .xpath("//div[contains(@class, 'mention-list')]//div[1]");
+                                driver.findElement(firstSuggestionSelector).click();
+                            }
+                        }
                     } catch (Exception ignored) {
                         // No suggestion or timeout, just continue
                     }
@@ -204,20 +280,12 @@ public class TikTokService {
         }
     }
 
-    private void setVisibility(WebDriver driver, String visibility) {
-        log.info("Setting visibility: {}", visibility);
-        // Implementation depends on TikTok's specific UI for visibility
-        // This is a placeholder as the selectors are complex and dynamic
-    }
-
     private void postVideo(WebDriver driver) {
-        log.info("尋找 發佈按鈕 位置中");
         try {
             // Target the button element using data-e2e attribute and Button__content
             By postSelector = By.xpath(
                     "//button[@data-e2e='post_video_button' and .//div[contains(@class, 'Button__content') and (contains(text(), '發佈') or contains(text(), 'Post'))]]");
-            WebElement postButton = new WebDriverWait(driver, Duration.ofSeconds(30))
-                    .until(ExpectedConditions.elementToBeClickable(postSelector));
+            WebElement postButton = findClickableElement(driver, postSelector, "發佈按鈕");
             log.info("已找到 發佈按鈕 : {}", postSelector);
 
             log.info("執行 點擊發佈 操作");
@@ -260,6 +328,46 @@ public class TikTokService {
         } catch (Exception e) {
             log.warn("Could not click Post: {}", e.getMessage());
             throw new RuntimeException("Failed to post video", e);
+        }
+    }
+
+    private WebElement findElement(WebDriver driver, By selector, String description) {
+        log.info("尋找 {} 位置中", description);
+        while (true) {
+            try {
+                WebElement element = new WebDriverWait(driver, Duration.ofSeconds(5))
+                        .until(ExpectedConditions.presenceOfElementLocated(selector));
+                log.info("已找到 {} : {}", description, selector);
+                return element;
+            } catch (Exception e) {
+                log.info("找不到 {}, 持續尋找中...", description);
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted while waiting for " + description, ex);
+                }
+            }
+        }
+    }
+
+    private WebElement findClickableElement(WebDriver driver, By selector, String description) {
+        log.info("尋找 {} 位置中", description);
+        while (true) {
+            try {
+                WebElement element = new WebDriverWait(driver, Duration.ofSeconds(5))
+                        .until(ExpectedConditions.elementToBeClickable(selector));
+                log.info("已找到 {} : {}", description, selector);
+                return element;
+            } catch (Exception e) {
+                log.info("找不到 {}, 持續尋找中...", description);
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted while waiting for " + description, ex);
+                }
+            }
         }
     }
 }

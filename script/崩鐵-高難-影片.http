@@ -1,0 +1,43 @@
+### youtube
+POST http://localhost:8080/api/youtube/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-12-08-混沌回憶-猴子把戲.mp4",
+  "description": "練度展示於結尾\r\n",
+  "playlist": "崩壞:星穹鐵道-高難",
+  "visibility": "PUBLIC",
+  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "猴子把戲"]
+}
+
+### bilibili
+POST http://localhost:8080/api/bilibili/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-12-08-混沌回憶-猴子把戲.mp4",
+  "description": "練度展示於結尾\r\n",
+  "visibility": "public",
+  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "猴子把戲"]
+}
+### 小紅書
+POST http://localhost:8080/api/xiaohongshu/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-12-08-混沌回憶-猴子把戲.mp4",
+  "description": "練度展示於結尾\r\n",
+  "visibility": "public",
+  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "猴子把戲"]
+}
+
+### TikTok
+POST http://localhost:8080/api/tiktok/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\OBS-VidoeRecord\\2025-12-08-混沌回憶-猴子把戲.mp4",
+  "description": "練度展示於結尾\r\n",
+  "visibility": "PUBLIC",
+  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "猴子把戲"]
+}

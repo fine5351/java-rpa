@@ -3,31 +3,31 @@ POST http://localhost:8080/api/youtube/upload
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\月之三\\月之三-4.mp4",
+  "filePath": "D:\\Download\\未上傳\\赤龍之章\\赤龍之章-4.mp4",
   "description": "劇情\r\n",
   "playlist": "原神",
   "visibility": "PUBLIC",
-  "hashtags": ["原神", "genshinimpact", "月之三"]
+  "hashtags": ["原神", "genshinimpact", "赤龍之章"]
 }
 ### bilibili
 POST http://localhost:8080/api/bilibili/upload
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\月之三\\月之三-3.mp4",
+  "filePath": "D:\\Download\\未上傳\\赤龍之章\\赤龍之章-4.mp4",
   "description": "劇情\r\n",
   "visibility": "public",
-  "hashtags": ["原神", "genshinimpact", "月之三"]
+  "hashtags": ["原神", "genshinimpact", "赤龍之章"]
 }
 ### 小紅書
 POST http://localhost:8080/api/xiaohongshu/upload
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\月之三\\月之三-4.mp4",
+  "filePath": "D:\\Download\\未上傳\\赤龍之章\\赤龍之章-4.mp4",
   "description": "劇情\r\n",
   "visibility": "public",
-  "hashtags": ["原神", "genshinimpact", "月之三"]
+  "hashtags": ["原神", "genshinimpact", "赤龍之章"]
 }
 
 ### TikTok ｛
@@ -35,8 +35,8 @@ POST http://localhost:8080/api/tiktok/upload
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\月之三\\月之三-4.mp4",
+  "filePath": "D:\\Download\\未上傳\\赤龍之章\\赤龍之章-4.mp4",
   "description": "劇情\r\n",
   "visibility": "PUBLIC",
-  "hashtags": ["原神", "genshinimpact", "月之三"]
+  "hashtags": ["原神", "GenshinImpact", "赤龍之章"]
 }

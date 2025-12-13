@@ -3,34 +3,34 @@ POST http://localhost:8080/api/youtube/upload
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\2.4-將臨未抵的深淵\\2.4-將臨未抵的深淵-12.mp4",
-  "title": "2.4-將臨未抵的深淵-12",
+  "filePath": "D:\\Download\\未上傳\\山下之旅\\山下之旅.mp4",
+  "title": "山下之旅",
   "description": "劇情\r\n",
   "playlist": "絕區零",
   "visibility": "PUBLIC",
-  "hashtags": ["絕區零", "ZenlessZoneZero", "將臨未抵的深淵"]
+  "hashtags": ["絕區零", "ZenlessZoneZero", "山下之旅"]
 }
 ### bilibili
 POST http://localhost:8080/api/bilibili/upload
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\2.4-將臨未抵的深淵\\2.4-將臨未抵的深淵-12.mp4",
-  "title": "2.4-將臨未抵的深淵-12",
+  "filePath": "D:\\Download\\未上傳\\山下之旅\\山下之旅.mp4",
+  "title": "山下之旅",
   "description": "劇情\r\n",
   "visibility": "public",
-  "hashtags": ["絕區零", "ZenlessZoneZero", "將臨未抵的深淵"]
+  "hashtags": ["絕區零", "ZenlessZoneZero", "山下之旅"]
 }
 ### 小紅書
 POST http://localhost:8080/api/xiaohongshu/upload
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\2.4-將臨未抵的深淵\\2.4-將臨未抵的深淵-12.mp4",
-  "title": "2.4-將臨未抵的深淵-12",
+  "filePath": "D:\\Download\\未上傳\\山下之旅\\山下之旅.mp4",
+  "title": "山下之旅",
   "description": "劇情\r\n",
   "visibility": "public",
-  "hashtags": ["絕區零", "ZenlessZoneZero", "將臨未抵的深淵"]
+  "hashtags": ["絕區零", "ZenlessZoneZero", "山下之旅"]
 }
 
 ### TikTok ｛
@@ -38,9 +38,9 @@ POST http://localhost:8080/api/tiktok/upload
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\2.4-將臨未抵的深淵\\2.4-將臨未抵的深淵-12.mp4",
-  "title": "2.4-將臨未抵的深淵-12",
+  "filePath": "D:\\Download\\未上傳\\山下之旅\\山下之旅.mp4",
+  "title": "山下之旅",
   "description": "劇情\r\n",
   "visibility": "PUBLIC",
-  "hashtags": ["絕區零", "ZenlessZoneZero", "將臨未抵的深淵"]
+  "hashtags": ["絕區零", "ZenlessZoneZero", "山下之旅"]
 }
