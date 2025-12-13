@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.rpa.dto.MultiPlatformVideoUploadRequest;
+
 @Slf4j
 @RestController
 @RequestMapping("/api")
@@ -109,6 +111,86 @@ public class UploadController {
         }).start();
 
         return "Bilibili Upload started! Check the browser window.";
+    }
+
+    @PostMapping("/multi/upload")
+    public String uploadMultiPlatform(@RequestBody MultiPlatformVideoUploadRequest request) {
+        log.info("Received Multi-Platform upload request: {}", request);
+        new Thread(() -> {
+            try {
+                String title = getFileNameWithoutExtension(request.getFilePath());
+
+                // 1. YouTube
+                log.info("Starting YouTube upload...");
+                boolean ytSuccess = youTubeService.uploadVideo(
+                        request.getFilePath(),
+                        title,
+                        request.getDescription(),
+                        request.getPlaylist(),
+                        "PUBLIC", // Forced Public
+                        request.getHashtags(),
+                        false); // Close on success, keeping debugging simple for now or strictly follow
+                                // sequential?
+                                // "Manual verification" usually implies needed visibility, but "RPA" implies
+                                // automation.
+                                // If fail, we stop.
+
+                if (!ytSuccess) {
+                    log.error("YouTube upload failed. Stopping sequence.");
+                    return;
+                }
+
+                // 2. Bilibili
+                log.info("Starting Bilibili upload...");
+                boolean biliSuccess = bilibiliService.uploadVideo(
+                        request.getFilePath(),
+                        title,
+                        request.getDescription(),
+                        request.getHashtags(),
+                        false);
+
+                if (!biliSuccess) {
+                    log.error("Bilibili upload failed. Stopping sequence.");
+                    return;
+                }
+
+                // 3. Xiaohongshu
+                log.info("Starting Xiaohongshu upload...");
+                boolean xhsSuccess = xiaohongshuService.uploadVideo(
+                        request.getFilePath(),
+                        title,
+                        request.getDescription(),
+                        request.getHashtags(),
+                        false);
+
+                if (!xhsSuccess) {
+                    log.error("Xiaohongshu upload failed. Stopping sequence.");
+                    return;
+                }
+
+                // 4. TikTok
+                log.info("Starting TikTok upload...");
+                boolean tiktokSuccess = tikTokService.uploadVideo(
+                        request.getFilePath(),
+                        title,
+                        request.getDescription(),
+                        "PUBLIC", // Forced Public
+                        request.getHashtags(),
+                        false);
+
+                if (!tiktokSuccess) {
+                    log.error("TikTok upload failed.");
+                    return;
+                }
+
+                log.info("All platforms uploaded successfully!");
+
+            } catch (Exception e) {
+                log.error("Error during multi-platform upload sequence", e);
+            }
+        }).start();
+
+        return "Multi-Platform Upload started! Check the console for progress.";
     }
 
     private String getFileNameWithoutExtension(String filePath) {

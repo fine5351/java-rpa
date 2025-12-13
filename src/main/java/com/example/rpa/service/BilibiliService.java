@@ -23,7 +23,7 @@ import java.util.List;
 @Service
 public class BilibiliService {
 
-    public void uploadVideo(String filePath, String title, String description, List<String> hashtags,
+    public boolean uploadVideo(String filePath, String title, String description, List<String> hashtags,
             boolean keepOpenOnFailure) {
         String simplifiedTitle = (title);
 
@@ -42,8 +42,10 @@ public class BilibiliService {
             clickSubmit(driver);
             waitForSuccess(driver);
             success = true;
+            return true;
         } catch (Exception e) {
             log.error("Error during Bilibili upload", e);
+            return false;
         } finally {
             if (driver != null) {
                 if (success || !keepOpenOnFailure) {

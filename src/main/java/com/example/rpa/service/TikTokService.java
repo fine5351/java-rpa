@@ -22,7 +22,7 @@ import java.util.List;
 @Service
 public class TikTokService {
 
-    public void uploadVideo(String filePath, String title, String description, String visibility,
+    public boolean uploadVideo(String filePath, String title, String description, String visibility,
             List<String> hashtags, boolean keepOpenOnFailure) {
         String finalCaption = buildCaption(title, description, hashtags);
         log.info("Processed Caption: {}", finalCaption);
@@ -37,8 +37,10 @@ public class TikTokService {
             setCaption(driver, finalCaption);
             postVideo(driver);
             success = true;
+            return true;
         } catch (Exception e) {
             log.error("Error during TikTok upload", e);
+            return false;
         } finally {
             if (driver != null) {
                 if (success || !keepOpenOnFailure) {

@@ -23,7 +23,7 @@ import java.util.List;
 @Service
 public class XiaohongshuService {
 
-    public void uploadVideo(String filePath, String title, String description, List<String> hashtags,
+    public boolean uploadVideo(String filePath, String title, String description, List<String> hashtags,
             boolean keepOpenOnFailure) {
         String simplifiedTitle = ZhConverterUtil.toSimple(title);
         String finalDescription = buildDescription(title, description, hashtags);
@@ -44,8 +44,10 @@ public class XiaohongshuService {
             waitForPublishComplete(driver);
             clickPublish(driver);
             success = true;
+            return true;
         } catch (Exception e) {
             log.error("Error during Xiaohongshu upload", e);
+            return false;
         } finally {
             if (driver != null) {
                 if (success || !keepOpenOnFailure) {

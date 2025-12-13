@@ -46,7 +46,7 @@ public class YouTubeService {
             var startNode = app ? app : document.body;
             """;
 
-    public void uploadVideo(String filePath, String title, String description, String playlist, String visibility,
+    public boolean uploadVideo(String filePath, String title, String description, String playlist, String visibility,
             List<String> hashtags, boolean keepOpenOnFailure) {
         String finalDescription = buildDescription(title, description, hashtags);
         WebDriver driver = null;
@@ -64,8 +64,10 @@ public class YouTubeService {
             setVisibility(driver, visibility);
             saveAndClose(driver);
             success = true;
+            return true;
         } catch (Exception e) {
             log.error("Error during YouTube upload", e);
+            return false;
         } finally {
             if (driver != null) {
                 if (success || !keepOpenOnFailure) {
@@ -124,6 +126,42 @@ public class YouTubeService {
             continueButton.click();
         } catch (Exception ignored) {
         }
+
+    }
+
+    private void handleTrustTiersPopup(WebDriver driver) {
+        log.info("Checking for potential 'Trust Tiers' popup...");
+        try {
+            // Full xpath provided by user:
+            // /html/body/yt-trust-tiers-wizard-dialog/ytcp-dialog/tp-yt-paper-dialog/div[3]/div/ytcp-button/ytcp-button-shape/button/yt-touch-feedback-shape/div[2]
+            // We'll use a slightly more robust relative xpath targeting the button within
+            // the specific dialog
+            By popupSelector = By.xpath("//yt-trust-tiers-wizard-dialog");
+
+            // Short wait to see if it appears
+            try {
+                new WebDriverWait(driver, Duration.ofSeconds(5))
+                        .until(ExpectedConditions.presenceOfElementLocated(popupSelector));
+                log.info("'Trust Tiers' popup detected.");
+
+                // Find the confirm button ("Got it" / "知道了")
+                // Using a relative path similar to user's but targeting the button itself
+                By confirmBtnSelector = By.xpath(
+                        "//yt-trust-tiers-wizard-dialog//ytcp-button[.//div[contains(@class, 'yt-spec-touch-feedback-shape__fill')]]");
+
+                WebElement confirmBtn = new WebDriverWait(driver, Duration.ofSeconds(5))
+                        .until(ExpectedConditions.elementToBeClickable(confirmBtnSelector));
+
+                log.info("Found confirmation button, clicking...");
+                confirmBtn.click();
+                log.info("Popup dismissed.");
+                Thread.sleep(1000); // Wait for animation
+            } catch (Exception e) {
+                log.info("Popup did not appear or button not found: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            log.warn("Error handling popup: " + e.getMessage());
+        }
     }
 
     private void clickCreateButton(WebDriver driver) throws Exception {
@@ -137,6 +175,7 @@ public class YouTubeService {
             log.info("執行 點擊建立按鈕 操作");
             dispatchClickEvents(js, uploadButton);
             log.info("Dispatched click events to Upload button.");
+            handleTrustTiersPopup(driver);
         } else {
             throw new RuntimeException("Could not find any Upload/Create button.");
         }
