@@ -1,42 +1,10 @@
-### youtube
-POST http://localhost:8080/api/youtube/upload
+### all
+POST http://localhost:8080/api/multi/upload
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\2025-12-07-幻想真境劇詩\\2025-12-07-幻想真境劇詩.mp4",
+  "filePath": "D:\\Download\\2025-12-16-深境螺旋\\2025-12-16-深境螺旋.mp4",
   "description": "練度展示於結尾\r\n",
-  "playlist": "原神",
-  "visibility": "PUBLIC",
-  "hashtags": ["原神", "genshinimpact", "月之三"]
-}
-### bilibili
-POST http://localhost:8080/api/bilibili/upload
-Content-Type: application/json
-
-{
-  "filePath": "D:\\Download\\2025-12-07-幻想真境劇詩\\2025-12-07-幻想真境劇詩.mp4",
-  "description": "練度展示於結尾\r\n",
-  "visibility": "public",
-  "hashtags": ["原神", "genshinimpact", "月之三"]
-}
-### 小紅書
-POST http://localhost:8080/api/xiaohongshu/upload
-Content-Type: application/json
-
-{
-  "filePath": "D:\\Download\\2025-12-07-幻想真境劇詩\\2025-12-07-幻想真境劇詩.mp4",
-  "description": "練度展示於結尾\r\n",
-  "visibility": "public",
-  "hashtags": ["原神", "genshinimpact", "月之三"]
-}
-
-### TikTok ｛
-POST http://localhost:8080/api/tiktok/upload
-Content-Type: application/json
-
-{
-  "filePath": "D:\\Download\\2025-12-07-幻想真境劇詩\\2025-12-07-幻想真境劇詩.mp4",
-  "description": "練度展示於結尾\r\n",
-  "visibility": "PUBLIC",
-  "hashtags": ["原神", "GenshinImpact", "月之三"]
+  "playlist": "原神-高難",
+  "hashtags": ["原神", "genshinimpact"]
 }

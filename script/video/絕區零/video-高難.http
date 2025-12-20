@@ -3,52 +3,8 @@ POST http://localhost:8080/api/multi/upload
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\未上傳\\赤龍之章\\赤龍之章-5.mp4",
-  "description": "劇情\r\n",
-  "playlist": "原神",
-  "hashtags": ["原神", "genshinimpact", "赤龍之章"]
-}
-
-### youtube
-POST http://localhost:8080/api/youtube/upload
-Content-Type: application/json
-
-{
-  "filePath": "D:\\Download\\未上傳\\2025-12-13-危局強襲戰\\2025-12-13-危局強襲戰.mp4",
+  "filePath": "D:\\Download\\2025-12-20-式輿防衛戰\\2025-12-20-式輿防衛戰.mp4",
   "description": "練度展示於結尾\r\n",
   "playlist": "絕區零-高難",
-  "visibility": "PUBLIC",
-  "hashtags": ["絕區零", "ZenlessZoneZero"]
-}
-
-### bilibili
-POST http://localhost:8080/api/bilibili/upload
-Content-Type: application/json
-
-{
-  "filePath": "D:\\Download\\未上傳\\2025-12-13-危局強襲戰\\2025-12-13-危局強襲戰.mp4",
-  "description": "練度展示於結尾\r\n",
-  "visibility": "public",
-  "hashtags": ["絕區零", "ZenlessZoneZero"]
-}
-### 小紅書
-POST http://localhost:8080/api/xiaohongshu/upload
-Content-Type: application/json
-
-{
-  "filePath": "D:\\Download\\未上傳\\2025-12-13-危局強襲戰\\2025-12-13-危局強襲戰.mp4",
-  "description": "練度展示於結尾\r\n",
-  "visibility": "public",
-  "hashtags": ["絕區零", "ZenlessZoneZero"]
-}
-
-### TikTok
-POST http://localhost:8080/api/tiktok/upload
-Content-Type: application/json
-
-{
-  "filePath": "D:\\Download\\未上傳\\2025-12-13-危局強襲戰\\2025-12-13-危局強襲戰.mp4",
-  "description": "練度展示於結尾\r\n",
-  "visibility": "PUBLIC",
   "hashtags": ["絕區零", "ZenlessZoneZero"]
 }

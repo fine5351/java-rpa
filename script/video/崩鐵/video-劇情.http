@@ -1,0 +1,21 @@
+### all
+POST http://localhost:8080/api/multi/upload
+Content-Type: application/json
+
+{
+  "filePath": "D:\\Download\\3.8-記憶是夢的開場白\\3.8-記憶是夢的開場白-1.mp4",
+  "description": "劇情\r\n",
+  "playlist": "崩壞:星穹鐵道",
+  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "記憶是夢的開場白"]
+}
+
+### all
+POST http://localhost:8080/api/multi/upload/folder
+Content-Type: application/json
+
+{
+  "folderPath": "D:\\Download\\3.8-記憶是夢的開場白",
+  "description": "劇情\r\n",
+  "playlist": "崩壞:星穹鐵道",
+  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "記憶是夢的開場白"]
+}
