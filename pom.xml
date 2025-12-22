@@ -51,7 +51,7 @@
 		</dependency>
 		<!-- OpenCC4J for Traditional/Simplified Chinese Conversion -->
 		<dependency>
-			<groupId>com.github.hubs</groupId>
+			<groupId>com.github.houbb</groupId>
 			<artifactId>opencc4j</artifactId>
 			<version>1.8.1</version>
 		</dependency>
