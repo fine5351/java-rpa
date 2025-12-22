@@ -234,7 +234,7 @@ public class TikTokService {
                                 // Log detailed info for debugging
                                 if (log.isDebugEnabled() || true) {
                                     log.info("Checking: Tag='{}', CountStr='{}', Value={}, HTML={}",
-                                            tagName, countText, count, suggestion.getAttribute("outerHTML"));
+                                            tagName, countText, count, suggestion.getDomAttribute("outerHTML"));
                                 }
 
                                 // Check for exact match (case-insensitive)
@@ -261,7 +261,7 @@ public class TikTokService {
                             log.info("未找到精確匹配，嘗試點擊第一個建議");
                             if (!suggestions.isEmpty()) {
                                 WebElement first = suggestions.get(0);
-                                log.info("Fallback clicking element with HTML: {}", first.getAttribute("outerHTML"));
+                                log.info("Fallback clicking element with HTML: {}", first.getDomAttribute("outerHTML"));
                                 first.click();
                             } else {
                                 // Try old selector as backup

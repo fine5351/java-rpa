@@ -112,7 +112,7 @@ public class ThreadsService {
                             By.xpath("//div[text()='Post' or text()='發佈']")));
 
             // Check if disabled
-            if (!Boolean.parseBoolean(postBtn.getAttribute("aria-disabled"))) {
+            if (!Boolean.parseBoolean(postBtn.getDomAttribute("aria-disabled"))) {
                 postBtn.click();
                 log.info("Clicked Post.");
             } else {
