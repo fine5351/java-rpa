@@ -270,6 +270,9 @@ public class YouTubeService {
     }
 
     private void uploadFile(WebDriver driver, String filePath) {
+        if (filePath == null || filePath.isEmpty()) {
+            throw new IllegalArgumentException("File path cannot be null or empty");
+        }
         By selector = By.xpath("//input[@type='file']");
         WebElement fileInput = findElement(driver, selector, "上傳檔案輸入框");
         log.info("執行 上傳檔案 操作");
