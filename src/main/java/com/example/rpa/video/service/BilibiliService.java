@@ -92,14 +92,13 @@ public class BilibiliService {
     }
 
     private void navigateToUpload(WebDriver driver) {
-        log.info("尋找 上傳頁面 位置中");
-        log.info("已找到 上傳頁面 : {}", "https://member.bilibili.com/platform/upload/video/frame");
-        log.info("執行 前往上傳頁面 操作");
+        String stepName = "前往上傳頁面";
+        log.info("步驟 : {}, 持續尋找中 {}...", stepName, "https://member.bilibili.com/platform/upload/video/frame");
         driver.get("https://member.bilibili.com/platform/upload/video/frame");
     }
 
     private void uploadFile(WebDriver driver, String filePath) {
-        log.info("尋找 上傳按鈕 位置中");
+        String stepName = "上傳檔案";
         try {
             // Wait for page to settle
             Thread.sleep(3000);
@@ -124,20 +123,15 @@ public class BilibiliService {
                 By uploadAreaSelector = By.xpath("//div[contains(@class, 'upload-area')]");
 
                 // Infinite wait for upload area
-                WebElement uploadArea = findClickableElement(driver, uploadAreaSelector, "上傳區域");
+                WebElement uploadArea = findClickableElement(driver, stepName, uploadAreaSelector, "上傳區域");
 
-                log.info("執行 點擊上傳區域 操作");
                 uploadArea.click();
 
                 // Wait for input to appear (Infinite wait)
-                log.info("等待檔案輸入框出現...");
-                WebElement fileInput = findElement(driver, globalInputSelector, "上傳按鈕 (觸發後)");
+                WebElement fileInput = findElement(driver, stepName, globalInputSelector, "上傳按鈕 (觸發後)");
 
-                log.info("執行 上傳檔案 操作");
                 fileInput.sendKeys(filePath);
             } else {
-                log.info("已找到 上傳按鈕 : {}", globalInputSelector);
-                log.info("執行 上傳檔案 操作");
                 inputs.get(0).sendKeys(filePath);
             }
         } catch (Exception e) {
@@ -147,7 +141,7 @@ public class BilibiliService {
     }
 
     private void waitForUploadComplete(WebDriver driver) {
-        log.info("Waiting for upload to complete...");
+        String stepName = "等待上傳完成";
         while (true) {
             try {
                 // Check for success message or completion state FIRST
@@ -171,7 +165,7 @@ public class BilibiliService {
 
                 Thread.sleep(1000);
             } catch (Exception e) {
-                log.info("Waiting for upload...");
+                log.info("步驟 : {}, 持續尋找中 {}...", stepName, "上傳完成標誌");
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException ex) {
@@ -184,10 +178,9 @@ public class BilibiliService {
 
     private void setTitle(WebDriver driver, String title) {
         try {
+            String stepName = "設定標題";
             By selector = By.xpath("//input[contains(@placeholder, '标题') or contains(@placeholder, 'Title')]");
-            WebElement titleInput = findElement(driver, selector, "標題輸入框");
-
-            log.info("執行 設定標題 操作");
+            WebElement titleInput = findElement(driver, stepName, selector, "標題輸入框");
 
             // Clear existing title (Bilibili might auto-fill from filename)
             titleInput.click();
@@ -203,13 +196,12 @@ public class BilibiliService {
 
     private void setDescription(WebDriver driver, String description) {
         try {
+            String stepName = "設定說明";
             // Use CSS selector for better readability and precision with attributes
             // matching the user's provided HTML
             By selector = By.cssSelector("div.ql-editor[contenteditable='true'][data-placeholder*='填写更全面的相关信息']");
 
-            WebElement descInput = findElement(driver, selector, "說明輸入框");
-
-            log.info("執行 設定說明 操作 (使用 JS)");
+            WebElement descInput = findElement(driver, stepName, selector, "說明輸入框");
 
             // Focus first
             try {
@@ -246,12 +238,12 @@ public class BilibiliService {
             return;
 
         try {
+            String stepName = "設定標籤";
             // Updated selector based on user feedback
             By selector = By.xpath("//input[contains(@class, 'input-val') and contains(@placeholder, '创建标签')]");
-            WebElement tagInput = findElement(driver, selector, "標籤輸入框");
+            WebElement tagInput = findElement(driver, stepName, selector, "標籤輸入框");
 
             for (String tag : hashtags) {
-                log.info("執行 設定標籤 操作");
                 String simplifiedTag = ZhConverterUtil.toSimple(tag);
                 tagInput.sendKeys(simplifiedTag);
                 log.info("標籤輸入: {}", simplifiedTag);
@@ -267,13 +259,13 @@ public class BilibiliService {
 
     private void clickSubmit(WebDriver driver) {
         try {
+            String stepName = "點擊發佈按鈕";
             By selector = By.xpath("//span[contains(text(), '立即投稿') or contains(text(), 'Submit')]");
-            WebElement submitBtn = findClickableElement(driver, selector, "發佈按鈕");
+            WebElement submitBtn = findClickableElement(driver, stepName, selector, "發佈按鈕");
 
             // Scroll to view
             ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", submitBtn);
 
-            log.info("執行 點擊發佈 操作");
             submitBtn.click();
             log.info("Clicked Submit.");
         } catch (Exception e) {
@@ -282,9 +274,9 @@ public class BilibiliService {
     }
 
     private void waitForSuccess(WebDriver driver) {
-        log.info("Waiting for success...");
+        String stepName = "等待發佈成功";
         By successSelector = By.xpath("//div[contains(@class, 'step-des') and contains(text(), '稿件投递成功')]");
-        findElement(driver, successSelector, "成功訊息");
+        findElement(driver, stepName, successSelector, "成功訊息");
         log.info("Success indicator found.");
         // Wait 2 seconds before closing
         log.info("Waiting 2 seconds before closing...");
@@ -295,41 +287,37 @@ public class BilibiliService {
         }
     }
 
-    private WebElement findElement(WebDriver driver, By selector, String description) {
-        log.info("尋找 {} 位置中", description);
+    private WebElement findElement(WebDriver driver, String stepName, By selector, String elementName) {
         while (true) {
             try {
                 WebElement element = new WebDriverWait(driver, Duration.ofSeconds(5))
                         .until(ExpectedConditions.presenceOfElementLocated(selector));
-                log.info("已找到 {} : {}", description, selector);
                 return element;
             } catch (Exception e) {
-                log.info("找不到 {}, 持續尋找中...", description);
+                log.info("步驟 : {}, 持續尋找中 {}...", stepName, elementName);
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException("Interrupted while waiting for " + description, ex);
+                    throw new RuntimeException("Interrupted while waiting for " + elementName, ex);
                 }
             }
         }
     }
 
-    private WebElement findClickableElement(WebDriver driver, By selector, String description) {
-        log.info("尋找 {} 位置中", description);
+    private WebElement findClickableElement(WebDriver driver, String stepName, By selector, String elementName) {
         while (true) {
             try {
                 WebElement element = new WebDriverWait(driver, Duration.ofSeconds(5))
                         .until(ExpectedConditions.elementToBeClickable(selector));
-                log.info("已找到 {} : {}", description, selector);
                 return element;
             } catch (Exception e) {
-                log.info("找不到 {}, 持續尋找中...", description);
+                log.info("步驟 : {}, 持續尋找中 {}...", stepName, elementName);
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException("Interrupted while waiting for " + description, ex);
+                    throw new RuntimeException("Interrupted while waiting for " + elementName, ex);
                 }
             }
         }

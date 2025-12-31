@@ -91,18 +91,16 @@ public class TikTokService {
     }
 
     private void navigateToUpload(WebDriver driver) {
-        log.info("尋找 上傳頁面 位置中");
-        log.info("已找到 上傳頁面 : {}", "https://www.tiktok.com/tiktokstudio/upload");
-        log.info("執行 前往上傳頁面 操作");
+        String stepName = "前往上傳頁面";
+        log.info("步驟 : {}, 持續尋找中 {}...", stepName, "https://www.tiktok.com/tiktokstudio/upload");
         driver.get("https://www.tiktok.com/tiktokstudio/upload");
     }
 
     private void uploadFile(WebDriver driver, String filePath) {
-        log.info("尋找 上傳按鈕 位置中");
+        String stepName = "上傳檔案";
         try {
             By selector = By.xpath("//input[@type='file']");
-            WebElement fileInput = findElement(driver, selector, "上傳按鈕");
-            log.info("執行 上傳檔案 操作");
+            WebElement fileInput = findElement(driver, stepName, selector, "上傳按鈕");
             fileInput.sendKeys(filePath);
         } catch (Exception e) {
             log.error("File input not found.");
@@ -111,7 +109,7 @@ public class TikTokService {
     }
 
     private void waitForUploadComplete(WebDriver driver) {
-        log.info("Waiting for upload to complete...");
+        String stepName = "等待上傳完成";
         boolean uploadComplete = false;
 
         while (!uploadComplete) {
@@ -142,7 +140,7 @@ public class TikTokService {
 
                 Thread.sleep(1000);
             } catch (Exception e) {
-                log.info("Waiting for upload...");
+                log.info("步驟 : {}, 持續尋找中 {}...", stepName, "上傳完成標誌");
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException ex) {
@@ -165,10 +163,9 @@ public class TikTokService {
 
     private void setCaption(WebDriver driver, String caption) {
         try {
+            String stepName = "設定標題";
             By selector = By.xpath("//div[@contenteditable='true']");
-            WebElement editor = findClickableElement(driver, selector, "標題輸入框");
-            log.info("已找到 標題輸入框 : {}", selector);
-            log.info("執行 設定標題 操作");
+            WebElement editor = findClickableElement(driver, stepName, selector, "標題輸入框");
             editor.click();
             editor.sendKeys(Keys.CONTROL + "a");
             editor.sendKeys(Keys.BACK_SPACE);
@@ -274,8 +271,7 @@ public class TikTokService {
                         // No suggestion or timeout, just continue
                     }
                 }
-                editor.sendKeys(" ");
-            }
+            editor.sendKeys(" ");
             log.info("Caption set.");
         } catch (Exception e) {
             log.warn("Could not set caption: {}", e.getMessage());
@@ -284,25 +280,22 @@ public class TikTokService {
 
     private void postVideo(WebDriver driver) {
         try {
+            String stepName = "點擊發佈";
             // Target the button element using data-e2e attribute and Button__content
             By postSelector = By.xpath(
                     "//button[@data-e2e='post_video_button' and .//div[contains(@class, 'Button__content') and (contains(text(), '發佈') or contains(text(), 'Post'))]]");
-            WebElement postButton = findClickableElement(driver, postSelector, "發佈按鈕");
-            log.info("已找到 發佈按鈕 : {}", postSelector);
+            WebElement postButton = findClickableElement(driver, stepName, postSelector, "發佈按鈕");
 
-            log.info("執行 點擊發佈 操作");
             postButton.click();
             log.info("Clicked Post.");
 
             // Handle "Post Immediately" modal if it appears
             try {
-                log.info("尋找 發佈確認按鈕 位置中");
+                String confirmStep = "發佈確認";
                 By confirmSelector = By.xpath(
                         "//button[contains(@class, 'TUXButton') and .//div[contains(@class, 'TUXButton-label') and (contains(text(), '立即發佈') or contains(text(), 'Post'))]]");
                 WebElement confirmButton = new WebDriverWait(driver, Duration.ofSeconds(5))
                         .until(ExpectedConditions.elementToBeClickable(confirmSelector));
-                log.info("已找到 發佈確認按鈕 : {}", confirmSelector);
-                log.info("執行 點擊發佈 操作");
                 confirmButton.click();
                 log.info("Clicked Post Immediately.");
             } catch (Exception e) {
@@ -333,41 +326,37 @@ public class TikTokService {
         }
     }
 
-    private WebElement findElement(WebDriver driver, By selector, String description) {
-        log.info("尋找 {} 位置中", description);
+    private WebElement findElement(WebDriver driver, String stepName, By selector, String elementName) {
         while (true) {
             try {
                 WebElement element = new WebDriverWait(driver, Duration.ofSeconds(5))
                         .until(ExpectedConditions.presenceOfElementLocated(selector));
-                log.info("已找到 {} : {}", description, selector);
                 return element;
             } catch (Exception e) {
-                log.info("找不到 {}, 持續尋找中...", description);
+                log.info("步驟 : {}, 持續尋找中 {}...", stepName, elementName);
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException("Interrupted while waiting for " + description, ex);
+                    throw new RuntimeException("Interrupted while waiting for " + elementName, ex);
                 }
             }
         }
     }
 
-    private WebElement findClickableElement(WebDriver driver, By selector, String description) {
-        log.info("尋找 {} 位置中", description);
+    private WebElement findClickableElement(WebDriver driver, String stepName, By selector, String elementName) {
         while (true) {
             try {
                 WebElement element = new WebDriverWait(driver, Duration.ofSeconds(5))
                         .until(ExpectedConditions.elementToBeClickable(selector));
-                log.info("已找到 {} : {}", description, selector);
                 return element;
             } catch (Exception e) {
-                log.info("找不到 {}, 持續尋找中...", description);
+                log.info("步驟 : {}, 持續尋找中 {}...", stepName, elementName);
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException("Interrupted while waiting for " + description, ex);
+                    throw new RuntimeException("Interrupted while waiting for " + elementName, ex);
                 }
             }
         }

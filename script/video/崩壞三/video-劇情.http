@@ -1,0 +1,10 @@
+### all
+POST http://localhost:8080/api/multi/upload/folder
+Content-Type: application/json
+
+{
+  "folderPath": "D:\\Download\\ch29-來自樂土",
+  "description": "劇情\r\n",
+  "playlist": "崩壞三",
+  "hashtags": ["崩壞三", "HonkaiImpact3rd", "來自樂土"]
+}

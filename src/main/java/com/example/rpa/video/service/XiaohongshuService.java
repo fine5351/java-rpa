@@ -92,18 +92,16 @@ public class XiaohongshuService {
     }
 
     private void navigateToCreatorStudio(WebDriver driver) {
-        log.info("尋找 上傳頁面 位置中");
-        log.info("已找到 上傳頁面 : {}", "https://creator.xiaohongshu.com/publish/publish");
-        log.info("執行 前往上傳頁面 操作");
+        String stepName = "前往上傳頁面";
+        log.info("步驟 : {}, 持續尋找中 {}...", stepName, "https://creator.xiaohongshu.com/publish/publish");
         driver.get("https://creator.xiaohongshu.com/publish/publish");
     }
 
     private void uploadFile(WebDriver driver, String filePath) {
-        log.info("尋找 上傳按鈕 位置中");
+        String stepName = "上傳檔案";
         try {
             By selector = By.xpath("//input[@type='file']");
-            WebElement fileInput = findElement(driver, selector, "上傳按鈕");
-            log.info("執行 上傳檔案 操作");
+            WebElement fileInput = findElement(driver, stepName, selector, "上傳按鈕");
             fileInput.sendKeys(filePath);
         } catch (Exception e) {
             log.error("File input not found.");
@@ -112,7 +110,7 @@ public class XiaohongshuService {
     }
 
     private void waitForUploadComplete(WebDriver driver) {
-        log.info("Waiting for upload to complete...");
+        String stepName = "等待上傳完成";
         while (true) {
             try {
                 boolean isUploading = false;
@@ -136,7 +134,7 @@ public class XiaohongshuService {
                 }
                 Thread.sleep(1000);
             } catch (Exception e) {
-                log.info("Waiting for upload...");
+                log.info("步驟 : {}, 持續尋找中 {}...", stepName, "上傳完成標誌");
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException ex) {
@@ -149,9 +147,9 @@ public class XiaohongshuService {
 
     private void setTitle(WebDriver driver, String title) {
         try {
+            String stepName = "設定標題";
             By selector = By.xpath("//input[contains(@placeholder, '填写标题') or contains(@placeholder, '標題')]");
-            WebElement titleInput = findElement(driver, selector, "標題輸入框");
-            log.info("執行 設定標題 操作");
+            WebElement titleInput = findElement(driver, stepName, selector, "標題輸入框");
             titleInput.click();
             titleInput.sendKeys(Keys.CONTROL + "a");
             titleInput.sendKeys(Keys.BACK_SPACE);
@@ -164,10 +162,10 @@ public class XiaohongshuService {
 
     private void setDescription(WebDriver driver, String description) {
         try {
+            String stepName = "設定說明";
             By selector = By.xpath(
                     "//div[contains(@class, 'tiptap') and contains(@class, 'ProseMirror') and @contenteditable='true']");
-            WebElement descInput = findElement(driver, selector, "說明輸入框");
-            log.info("執行 設定說明 操作");
+            WebElement descInput = findElement(driver, stepName, selector, "說明輸入框");
             descInput.click();
 
             // Split description by spaces to handle hashtags
@@ -177,12 +175,10 @@ public class XiaohongshuService {
                 Thread.sleep(2000);
                 if (part.startsWith("#")) {
                     try {
-                        log.info("尋找 標籤建議 位置中");
                         By suggestionSelector = By
                                 .xpath("/html/body/div[16]/div/div[1]/div/div/div[1]");
                         List<WebElement> suggestions = new WebDriverWait(driver, Duration.ofSeconds(5))
                                 .until(ExpectedConditions.presenceOfAllElementsLocatedBy(suggestionSelector));
-                        log.info("已找到 標籤建議 : {}", suggestionSelector);
 
                         WebElement bestMatch = null;
                         long maxViews = -1;
@@ -206,11 +202,9 @@ public class XiaohongshuService {
                         }
 
                         if (bestMatch != null) {
-                            log.info("執行 點擊最佳建議 操作");
                             bestMatch.click();
                         } else if (!suggestions.isEmpty()) {
                             // Fallback: click the first one if no exact match found, or just ignore
-                            log.info("執行 點擊首個建議 操作");
                             suggestions.get(0).click();
                         }
                         descInput.sendKeys(" ");
@@ -246,7 +240,7 @@ public class XiaohongshuService {
     }
 
     private void waitForPublishComplete(WebDriver driver) {
-        log.info("Waiting for publish to complete...");
+        String stepName = "等待發佈完成";
         while (true) {
             try {
                 // Check for upload progress (e.g., "上传中 28%")
@@ -261,7 +255,7 @@ public class XiaohongshuService {
                 // If no progress indicator, assume ready to publish
                 break;
             } catch (Exception e) {
-                // Ignore and continue waiting
+                log.info("步驟 : {}, 持續尋找中 {}...", stepName, "發佈完成標誌");
             }
             try {
                 Thread.sleep(2000);
@@ -273,7 +267,7 @@ public class XiaohongshuService {
     }
 
     private void clickPublish(WebDriver driver) {
-        log.info("尋找 發佈按鈕 (使用 class 'publishBtn')");
+        String stepName = "點擊發佈按鈕";
         By selector = By.cssSelector("button.publishBtn");
 
         while (true) {
@@ -296,7 +290,6 @@ public class XiaohongshuService {
                     new WebDriverWait(driver, Duration.ofSeconds(5))
                             .until(ExpectedConditions.elementToBeClickable(publishBtn));
 
-                    log.info("執行 點擊發佈 操作");
                     publishBtn.click();
                     log.info("Clicked Publish.");
 
@@ -326,7 +319,7 @@ public class XiaohongshuService {
                 // Ignore and retry
             }
 
-            log.info("找不到或無法點擊發佈按鈕, 持續尋找中...");
+            log.info("步驟 : {}, 持續尋找中 {}...", stepName, "發佈按鈕");
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
@@ -343,8 +336,7 @@ public class XiaohongshuService {
         }
     }
 
-    private WebElement findElement(WebDriver driver, By selector, String description) {
-        log.info("尋找 {} 位置中", description);
+    private WebElement findElement(WebDriver driver, String stepName, By selector, String description) {
         while (true) {
             try {
                 WebElement element = new WebDriverWait(driver, Duration.ofSeconds(5))
@@ -352,7 +344,7 @@ public class XiaohongshuService {
                 log.info("已找到 {} : {}", description, selector);
                 return element;
             } catch (Exception e) {
-                log.info("找不到 {}, 持續尋找中...", description);
+                log.info("步驟 : {}, 持續尋找中 {}...", stepName, description);
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException ex) {

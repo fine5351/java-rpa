@@ -115,9 +115,8 @@ public class YouTubeService {
     }
 
     private void navigateToStudio(WebDriver driver) {
-        log.info("尋找 YouTube Studio 位置中");
-        log.info("已找到 YouTube Studio : {}", "https://studio.youtube.com");
-        log.info("執行 前往 YouTube Studio 操作");
+        String stepName = "前往 YouTube Studio";
+        log.info("步驟 : {}, 持續尋找中 {}...", stepName, "https://studio.youtube.com");
         driver.get("https://studio.youtube.com");
         try {
             WebElement continueButton = new WebDriverWait(driver, Duration.ofSeconds(5)).until(ExpectedConditions
@@ -126,7 +125,6 @@ public class YouTubeService {
             continueButton.click();
         } catch (Exception ignored) {
         }
-
     }
 
     private void handleTrustTiersPopup(WebDriver driver) {
@@ -165,14 +163,12 @@ public class YouTubeService {
     }
 
     private void clickCreateButton(WebDriver driver) throws Exception {
-        log.info("尋找 建立按鈕 位置中");
+        String stepName = "點擊建立按鈕";
         JavascriptExecutor js = (JavascriptExecutor) driver;
-        WebElement uploadButton = findUploadButton(js);
+        WebElement uploadButton = findUploadButton(js, stepName);
         if (uploadButton != null) {
-            log.info("已找到 建立按鈕 : {}", uploadButton);
             js.executeScript("arguments[0].scrollIntoView({block: 'center'});", uploadButton);
             uploadButton = adjustButtonTarget(uploadButton);
-            log.info("執行 點擊建立按鈕 操作");
             dispatchClickEvents(js, uploadButton);
             log.info("Dispatched click events to Upload button.");
             handleTrustTiersPopup(driver);
@@ -181,7 +177,8 @@ public class YouTubeService {
         }
     }
 
-    private WebElement findUploadButton(JavascriptExecutor js) throws InterruptedException {
+    private WebElement findUploadButton(JavascriptExecutor js, String stepName) throws InterruptedException {
+        String elementName = "建立按鈕";
         while (true) {
             try {
                 String quickAction = FIND_ELEMENT_RECURSIVE_SCRIPT + """
@@ -207,7 +204,7 @@ public class YouTubeService {
                     return btn;
             } catch (Exception ignored) {
             }
-            log.info("找不到 建立按鈕, 持續尋找中...");
+            log.info("步驟 : {}, 持續尋找中 {}...", stepName, elementName);
             Thread.sleep(2000);
         }
     }
@@ -228,6 +225,8 @@ public class YouTubeService {
     }
 
     private void selectUploadOption(WebDriver driver) throws Exception {
+        String stepName = "點擊上傳影片選項";
+        String elementName = "上傳影片選項";
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(3));
         try {
             wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//input[@type='file']")));
@@ -245,8 +244,6 @@ public class YouTubeService {
                 // Quick check with short timeout
                 WebElement uploadOption = new WebDriverWait(driver, Duration.ofSeconds(5)).until(ExpectedConditions
                         .presenceOfElementLocated(selector));
-                log.info("已找到 上傳影片選項 : {}", selector);
-                log.info("執行 點擊上傳影片選項 操作");
                 dispatchClickEvents(js, uploadOption);
                 return;
             } catch (Exception e) {
@@ -258,13 +255,11 @@ public class YouTubeService {
                         """;
                 WebElement uploadOption = (WebElement) js.executeScript(script);
                 if (uploadOption != null) {
-                    log.info("已找到 上傳影片選項 (Script) : {}", uploadOption);
-                    log.info("執行 點擊上傳影片選項 操作");
                     dispatchClickEvents(js, uploadOption);
                     return;
                 }
             }
-            log.info("找不到 上傳影片選項, 持續尋找中...");
+            log.info("步驟 : {}, 持續尋找中 {}...", stepName, elementName);
             Thread.sleep(2000);
         }
     }
@@ -273,9 +268,9 @@ public class YouTubeService {
         if (filePath == null || filePath.isEmpty()) {
             throw new IllegalArgumentException("File path cannot be null or empty");
         }
+        String stepName = "上傳檔案";
         By selector = By.xpath("//input[@type='file']");
-        WebElement fileInput = findElement(driver, selector, "上傳檔案輸入框");
-        log.info("執行 上傳檔案 操作");
+        WebElement fileInput = findElement(driver, stepName, selector, "上傳檔案輸入框");
         fileInput.sendKeys(filePath);
         log.info("Sent file path: {}", filePath);
     }
@@ -283,20 +278,20 @@ public class YouTubeService {
     private void enterTitleAndDescription(WebDriver driver, String title, String description) {
         try {
             if (title != null && !title.isEmpty()) {
+                String stepName = "設定標題";
                 By titleSelector = By
                         .xpath("//ytcp-social-suggestions-textbox[@id='title-textarea']//div[@id='textbox']");
-                WebElement titleBox = findElement(driver, titleSelector, "標題輸入框");
+                WebElement titleBox = findElement(driver, stepName, titleSelector, "標題輸入框");
 
-                log.info("執行 設定標題 操作");
                 setText(titleBox, title);
                 log.info("Set title: {}", title);
             }
             if (description != null && !description.isEmpty()) {
+                String stepName = "設定說明";
                 By descSelector = By
                         .xpath("//ytcp-social-suggestions-textbox[@id='description-textarea']//div[@id='textbox']");
-                WebElement descBox = findElement(driver, descSelector, "說明輸入框");
+                WebElement descBox = findElement(driver, stepName, descSelector, "說明輸入框");
 
-                log.info("執行 設定說明 操作");
                 setText(descBox, description);
                 log.info("Set description.");
             }
@@ -317,32 +312,32 @@ public class YouTubeService {
         JavascriptExecutor js = (JavascriptExecutor) driver;
         try {
             // Click the dropdown trigger (arrow icon)
+            String openStep = "開啟播放清單選單";
             By triggerSelector = By.xpath("//ytcp-text-dropdown-trigger//div[contains(@class, 'right-container')]");
-            WebElement trigger = findClickableElement(driver, triggerSelector, "播放清單選單");
+            WebElement trigger = findClickableElement(driver, openStep, triggerSelector, "播放清單選單");
 
             js.executeScript("arguments[0].scrollIntoView({block: 'center'});", trigger);
-            log.info("執行 開啟播放清單選單 操作");
             js.executeScript("arguments[0].click();", trigger);
             log.info("Clicked playlist dropdown trigger.");
 
             // Wait for the list to be visible and select the item
             // The item is in an 'li' with class 'ytcp-checkbox-group' containing the label
             // text
+            String selectStep = "選擇播放清單";
             By itemSelector = By.xpath(
                     "//li[contains(@class, 'ytcp-checkbox-group') and .//span[contains(@class, 'label-text') and normalize-space(text())='"
                             + playlist + "']]//div[@id='checkbox-container']");
-            WebElement item = findClickableElement(driver, itemSelector, "播放清單項目");
+            WebElement item = findClickableElement(driver, selectStep, itemSelector, "播放清單項目");
 
             js.executeScript("arguments[0].scrollIntoView({block: 'center'});", item);
-            log.info("執行 選擇播放清單 操作");
             item.click();
             log.info("Selected playlist: {}", playlist);
 
             // Click Done
+            String doneStep = "點擊完成按鈕";
             By doneSelector = By.xpath("//ytcp-button[.//div[contains(text(), 'Done') or contains(text(), '完成')]]");
-            WebElement doneBtn = findClickableElement(driver, doneSelector, "完成按鈕");
+            WebElement doneBtn = findClickableElement(driver, doneStep, doneSelector, "完成按鈕");
 
-            log.info("執行 點擊完成按鈕 操作");
             doneBtn.click();
             log.info("Clicked Done.");
         } catch (Exception e) {
@@ -351,16 +346,16 @@ public class YouTubeService {
     }
 
     private void setKidsRestriction(WebDriver driver) {
+        String stepName = "設定兒童選項";
         By selector = By.xpath("//tp-yt-paper-radio-button[@name='VIDEO_MADE_FOR_KIDS_NOT_MFK']");
-        findClickableElement(driver, selector, "兒童選項").click();
-        log.info("執行 設定兒童選項 操作");
+        findClickableElement(driver, stepName, selector, "兒童選項").click();
     }
 
     private void navigateWizardPages(WebDriver driver) throws InterruptedException {
+        String stepName = "點擊下一步按鈕";
         for (int i = 0; i < 3; i++) {
             By selector = By.id("next-button");
-            findClickableElement(driver, selector, "下一步按鈕").click();
-            log.info("執行 點擊下一步按鈕 操作");
+            findClickableElement(driver, stepName, selector, "下一步按鈕").click();
         }
     }
 
@@ -371,10 +366,9 @@ public class YouTubeService {
         else if ("UNLISTED".equalsIgnoreCase(visibility))
             vis = "UNLISTED";
 
+        String stepName = "設定公開性";
         By selector = By.xpath("//tp-yt-paper-radio-button[@name='" + vis + "']");
-        findClickableElement(driver, selector, "公開性選項").click();
-        log.info("已找到 公開性選項 : {}", selector);
-        log.info("執行 設定公開性 操作");
+        findClickableElement(driver, stepName, selector, "公開性選項").click();
     }
 
     private void saveAndClose(WebDriver driver) throws InterruptedException {
@@ -409,8 +403,7 @@ public class YouTubeService {
         }
 
         By doneSelector = By.id("done-button");
-        findClickableElement(driver, doneSelector, "完成按鈕").click();
-        log.info("執行 點擊完成按鈕 操作");
+        findClickableElement(driver, "點擊完成按鈕", doneSelector, "完成按鈕").click();
         log.info("Clicked Done button.");
         try {
             wait.until(ExpectedConditions.elementToBeClickable(By.id("close-button"))).click();
@@ -430,41 +423,37 @@ public class YouTubeService {
                 """, element);
     }
 
-    private WebElement findElement(WebDriver driver, By selector, String description) {
-        log.info("尋找 {} 位置中", description);
+    private WebElement findElement(WebDriver driver, String stepName, By selector, String elementName) {
         while (true) {
             try {
                 WebElement element = new WebDriverWait(driver, Duration.ofSeconds(5))
                         .until(ExpectedConditions.presenceOfElementLocated(selector));
-                log.info("已找到 {} : {}", description, selector);
                 return element;
             } catch (Exception e) {
-                log.info("找不到 {}, 持續尋找中...", description);
+                log.info("步驟 : {}, 持續尋找中 {}...", stepName, elementName);
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException("Interrupted while waiting for " + description, ex);
+                    throw new RuntimeException("Interrupted while waiting for " + elementName, ex);
                 }
             }
         }
     }
 
-    private WebElement findClickableElement(WebDriver driver, By selector, String description) {
-        log.info("尋找 {} 位置中", description);
+    private WebElement findClickableElement(WebDriver driver, String stepName, By selector, String elementName) {
         while (true) {
             try {
                 WebElement element = new WebDriverWait(driver, Duration.ofSeconds(5))
                         .until(ExpectedConditions.elementToBeClickable(selector));
-                log.info("已找到 {} : {}", description, selector);
                 return element;
             } catch (Exception e) {
-                log.info("找不到 {}, 持續尋找中...", description);
+                log.info("步驟 : {}, 持續尋找中 {}...", stepName, elementName);
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException("Interrupted while waiting for " + description, ex);
+                    throw new RuntimeException("Interrupted while waiting for " + elementName, ex);
                 }
             }
         }
