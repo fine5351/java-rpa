@@ -271,7 +271,8 @@ public class TikTokService {
                         // No suggestion or timeout, just continue
                     }
                 }
-            editor.sendKeys(" ");
+                editor.sendKeys(" ");
+            }
             log.info("Caption set.");
         } catch (Exception e) {
             log.warn("Could not set caption: {}", e.getMessage());
