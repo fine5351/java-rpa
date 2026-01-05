@@ -292,7 +292,6 @@ public class TikTokService {
 
             // Handle "Post Immediately" modal if it appears
             try {
-                String confirmStep = "發佈確認";
                 By confirmSelector = By.xpath(
                         "//button[contains(@class, 'TUXButton') and .//div[contains(@class, 'TUXButton-label') and (contains(text(), '立即發佈') or contains(text(), 'Post'))]]");
                 WebElement confirmButton = new WebDriverWait(driver, Duration.ofSeconds(5))

@@ -1,3 +1,14 @@
+### all
+POST http://localhost:8080/api/multi/upload/folder
+Content-Type: application/json
+
+{
+  "folderPath": "D:\\Download\\OBS-VidoeRecord\\未上傳\\空明尋劍錄",
+  "description": "劇情\r\n",
+  "playlist": "絕區零",
+  "hashtags": ["絕區零", "ZenlessZoneZero", "空明尋劍錄"]
+}
+
 ### youtube
 POST http://localhost:8080/api/youtube/upload
 Content-Type: application/json
