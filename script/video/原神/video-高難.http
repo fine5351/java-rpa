@@ -1,9 +1,9 @@
 ### all
-POST http://localhost:8080/api/multi/upload
+POST http://localhost:8080/api/multi/upload/folder
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\2025-12-16-深境螺旋\\2025-12-16-深境螺旋.mp4",
+  "folderPath": "D:\\Download\\OBS-VidoeRecord\\未上傳\\2026-01-04-幻想真境劇詩",
   "description": "練度展示於結尾\r\n",
   "playlist": "原神-高難",
   "hashtags": ["原神", "genshinimpact"]

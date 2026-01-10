@@ -1,9 +1,9 @@
 ### all
-POST http://localhost:8080/api/multi/upload
+POST http://localhost:8080/api/multi/upload/folder
 Content-Type: application/json
 
 {
-  "filePath": "D:\\Download\\2025-12-20-式輿防衛戰\\2025-12-20-式輿防衛戰.mp4",
+  "folderPath": "D:\\Download\\OBS-VideoRecord\\2025-01-10-式輿防衛戰",
   "description": "練度展示於結尾\r\n",
   "playlist": "絕區零-高難",
   "hashtags": ["絕區零", "ZenlessZoneZero"]

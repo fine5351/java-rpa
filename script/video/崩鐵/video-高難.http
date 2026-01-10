@@ -3,10 +3,10 @@ POST http://localhost:8080/api/multi/upload/folder
 Content-Type: application/json
 
 {
-  "folderPath": "D:\\Download\\2025-01-01-異相仲裁-不和諧音",
+  "folderPath": "D:\\Download\\OBS-VidoeRecord\\2026-01-06-虛構敘事-史詩叢集",
   "description": "練度展示於結尾\r\n",
   "playlist": "崩壞:星穹鐵道-高難",
-  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "不和諧音"]
+  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "史詩叢集"]
 }
 
 ### xiaohongshu
