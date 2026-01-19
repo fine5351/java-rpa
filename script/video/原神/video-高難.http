@@ -3,7 +3,7 @@ POST http://localhost:8080/api/multi/upload/folder
 Content-Type: application/json
 
 {
-  "folderPath": "D:\\Download\\OBS-VidoeRecord\\未上傳\\2026-01-04-幻想真境劇詩",
+  "folderPath": "D:\\Download\\OBS-VideoRecord\\2026-01-18-深境螺旋",
   "description": "練度展示於結尾\r\n",
   "playlist": "原神-高難",
   "hashtags": ["原神", "genshinimpact"]

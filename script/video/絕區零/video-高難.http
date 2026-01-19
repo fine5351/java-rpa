@@ -3,7 +3,7 @@ POST http://localhost:8080/api/multi/upload/folder
 Content-Type: application/json
 
 {
-  "folderPath": "D:\\Download\\OBS-VideoRecord\\2025-01-10-式輿防衛戰",
+  "folderPath": "D:\\Download\\OBS-VideoRecord\\2026-01-17-危局強襲戰",
   "description": "練度展示於結尾\r\n",
   "playlist": "絕區零-高難",
   "hashtags": ["絕區零", "ZenlessZoneZero"]

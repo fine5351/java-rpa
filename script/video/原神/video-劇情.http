@@ -3,8 +3,8 @@ POST http://localhost:8080/api/multi/upload/folder
 Content-Type: application/json
 
 {
-  "folderPath": "D:\\Download\\熾魂鬥士的雪界之旅",
+  "folderPath": "F:\\OBS-VideoRecord\\月之四",
   "description": "劇情\r\n",
   "playlist": "原神",
-  "hashtags": ["原神", "genshinimpact", "熾魂鬥士的雪界之旅"]
+  "hashtags": ["原神", "genshinimpact", "月之四", "如果在冬夜一個旅人", "真實之月"]
 }

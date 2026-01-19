@@ -38,6 +38,8 @@ public class BilibiliService {
             waitForUploadComplete(driver);
             setTitle(driver, simplifiedTitle);
             setDescription(driver, finalDescription);
+            setDescription(driver, finalDescription);
+            selectCategory(driver);
             setTags(driver, hashtags);
             clickSubmit(driver);
             waitForSuccess(driver);
@@ -99,44 +101,66 @@ public class BilibiliService {
 
     private void uploadFile(WebDriver driver, String filePath) {
         String stepName = "上傳檔案";
-        try {
-            // Wait for page to settle
-            Thread.sleep(3000);
+        while (true) {
+            try {
+                // Wait for page to settle
+                Thread.sleep(3000);
 
-            // Try to find the file input directly first (global search)
-            By globalInputSelector = By.xpath("//input[@type='file']");
-            List<WebElement> inputs = driver.findElements(globalInputSelector);
+                // Try to find the file input directly first (global search)
+                By globalInputSelector = By.xpath("//input[@type='file']");
+                List<WebElement> inputs = driver.findElements(globalInputSelector);
 
-            if (inputs.isEmpty()) {
-                log.info("未直接找到檔案輸入框，嘗試等待...");
+                if (inputs.isEmpty()) {
+                    log.info("未直接找到檔案輸入框，嘗試等待...");
+                    try {
+                        new WebDriverWait(driver, Duration.ofSeconds(5))
+                                .until(ExpectedConditions.presenceOfElementLocated(globalInputSelector));
+                        inputs = driver.findElements(globalInputSelector);
+                    } catch (Exception ignored) {
+                    }
+                }
+
+                if (inputs.isEmpty()) {
+                    log.info("仍未找到檔案輸入框，嘗試點擊上傳區域以觸發...");
+                    // If not found, try clicking the upload area to trigger it
+                    By uploadAreaSelector = By.xpath("//div[contains(@class, 'upload-area')]");
+
+                    // Infinite wait for upload area
+                    WebElement uploadArea = findClickableElement(driver, stepName, uploadAreaSelector, "上傳區域");
+
+                    uploadArea.click();
+
+                    // Wait for input to appear (Infinite wait)
+                    WebElement fileInput = findElement(driver, stepName, globalInputSelector, "上傳按鈕 (觸發後)");
+
+                    fileInput.sendKeys(filePath);
+                } else {
+                    inputs.get(0).sendKeys(filePath);
+                }
+
+                // Verify upload started
+                log.info("檔案路徑已送出，等待3秒確認上傳進度...");
+                Thread.sleep(3000);
+
+                // Check for progress element
+                // outerHTML = <span data-v-0092e033="" class="progress-text">67%</span>
+                List<WebElement> progressElements = driver.findElements(By.className("progress-text"));
+                if (!progressElements.isEmpty()) {
+                    log.info("檢測到上傳進度，上傳成功啟動。");
+                    break;
+                } else {
+                    log.warn("未檢測到上傳進度 (progress-text)，重新嘗試上傳...");
+                }
+
+            } catch (Exception e) {
+                log.error("上傳過程發生錯誤，準備重試...", e);
                 try {
-                    new WebDriverWait(driver, Duration.ofSeconds(5))
-                            .until(ExpectedConditions.presenceOfElementLocated(globalInputSelector));
-                    inputs = driver.findElements(globalInputSelector);
-                } catch (Exception ignored) {
+                    Thread.sleep(3000);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(ex);
                 }
             }
-
-            if (inputs.isEmpty()) {
-                log.info("仍未找到檔案輸入框，嘗試點擊上傳區域以觸發...");
-                // If not found, try clicking the upload area to trigger it
-                By uploadAreaSelector = By.xpath("//div[contains(@class, 'upload-area')]");
-
-                // Infinite wait for upload area
-                WebElement uploadArea = findClickableElement(driver, stepName, uploadAreaSelector, "上傳區域");
-
-                uploadArea.click();
-
-                // Wait for input to appear (Infinite wait)
-                WebElement fileInput = findElement(driver, stepName, globalInputSelector, "上傳按鈕 (觸發後)");
-
-                fileInput.sendKeys(filePath);
-            } else {
-                inputs.get(0).sendKeys(filePath);
-            }
-        } catch (Exception e) {
-            log.error("File input not found even after trying to trigger it.");
-            throw new RuntimeException(e);
         }
     }
 
@@ -230,6 +254,62 @@ public class BilibiliService {
             } catch (Exception ex) {
                 log.error("Fallback description set failed", ex);
             }
+        }
+    }
+
+    private void selectCategory(WebDriver driver) {
+        try {
+            String stepName = "選擇分區";
+            // Locate the dropdown using the user's provided class hint, or general class
+            // User provided: <div class="select-controller ...">
+            By dropdownSelector = By.cssSelector(".select-controller");
+            WebElement dropdown = findClickableElement(driver, stepName, dropdownSelector, "分區下拉選單");
+
+            // Scroll to it first
+            ((JavascriptExecutor) driver)
+                    .executeScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", dropdown);
+            Thread.sleep(500);
+
+            dropdown.click();
+            log.info("Clicked category dropdown.");
+
+            // Wait for options to appear
+            Thread.sleep(1000);
+
+            // Select "Game" (游戏)
+            // Looking for an element with text "游戏" that is selectable
+            By gameOptionSelector = By
+                    .xpath("//*[contains(text(), '游戏') and not(contains(@class, 'select-item-cont'))]");
+            // Note: The user showed 'select-item-cont' is the selected text.
+            // In the dropdown list, it might be different. usually it's a list item.
+            // Let's try a broader search for clickable "游戏" text in the dropdown container.
+
+            // Refined selector for the dropdown option:
+            By optionSelector = By.xpath(
+                    "//div[contains(@class, 'drop-main')]//span[contains(text(), '游戏')] | //div[contains(@class, 'drop-main')]//div[contains(text(), '游戏')]");
+            // Fallback to simple text search if class names are dynamic
+            By simpleOptionSelector = By.xpath("//*[text()='游戏']");
+
+            WebElement gameOption = null;
+            try {
+                gameOption = findClickableElement(driver, stepName, simpleOptionSelector, "遊戲選項");
+            } catch (Exception e) {
+                // Try looking specifically inside the dropdown list container if possible, but
+                // global text usually works for unique items like this
+                log.warn("Direct '游戏' text not found, trying alternative selectors...");
+            }
+
+            if (gameOption != null) {
+                gameOption.click();
+                log.info("Category 'Game' selected.");
+            } else {
+                log.error("Could not find '游戏' option.");
+            }
+
+            Thread.sleep(500);
+
+        } catch (Exception e) {
+            log.warn("Could not select category: {}", e.getMessage());
         }
     }
 
