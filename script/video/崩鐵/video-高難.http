@@ -3,30 +3,8 @@ POST http://localhost:8080/api/multi/upload/folder
 Content-Type: application/json
 
 {
-  "folderPath": "D:\\Download\\OBS-VidoeRecord\\2026-01-06-虛構敘事-史詩叢集",
+  "folderPath": "F:\\OBS-VideoRecord\\2026-01-20-混沌回憶-堤潰蟻穴",
   "description": "練度展示於結尾\r\n",
   "playlist": "崩壞:星穹鐵道-高難",
-  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "史詩叢集"]
-}
-
-### xiaohongshu
-POST http://localhost:8080/api/xiaohongshu/upload
-Content-Type: application/json
-
-{
-  "filePath": "D:\\Download\\2025-01-01-異相仲裁-不和諧音\\2025-01-01-異相仲裁-不和諧音.mp4",
-  "description": "練度展示於結尾\r\n",
-  "playlist": "崩壞:星穹鐵道-高難",
-  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "不和諧音"]
-}
-
-### tiktok
-POST http://localhost:8080/api/tiktok/upload
-Content-Type: application/json
-
-{
-  "filePath": "D:\\Download\\2025-01-01-異相仲裁-不和諧音\\2025-01-01-異相仲裁-不和諧音.mp4",
-  "description": "練度展示於結尾\r\n",
-  "playlist": "崩壞:星穹鐵道-高難",
-  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "不和諧音"]
+  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "堤潰蟻穴"]
 }

@@ -145,11 +145,20 @@ public class BilibiliService {
                 // Check for progress element
                 // outerHTML = <span data-v-0092e033="" class="progress-text">67%</span>
                 List<WebElement> progressElements = driver.findElements(By.className("progress-text"));
+
+                // Check for complete element
+                // outerHTML = <span data-v-0092e033="" style="" class="success">上传完成</span>
+                List<WebElement> completeElements = driver.findElements(
+                        By.xpath("//span[contains(@class, 'success') and contains(text(), '上传完成')]"));
+
                 if (!progressElements.isEmpty()) {
                     log.info("檢測到上傳進度，上傳成功啟動。");
                     break;
+                } else if (!completeElements.isEmpty()) {
+                    log.info("檢測到 '上传完成' 狀態，視為上傳成功。");
+                    break;
                 } else {
-                    log.warn("未檢測到上傳進度 (progress-text)，重新嘗試上傳...");
+                    log.warn("未檢測到上傳進度 (progress-text) 或 完成狀態，重新嘗試上傳...");
                 }
 
             } catch (Exception e) {

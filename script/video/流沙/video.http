@@ -1,0 +1,10 @@
+### all
+POST http://localhost:8080/api/multi/upload/folder
+Content-Type: application/json
+
+{
+  "folderPath": "F:\\Quicksand",
+  "description": "loop~",
+  "playlist": "Quicksand Shorts",
+  "hashtags": ["quicksand","acrylic","shorts"]
+}
