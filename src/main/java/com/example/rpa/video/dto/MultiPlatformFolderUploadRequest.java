@@ -8,5 +8,6 @@ public class MultiPlatformFolderUploadRequest {
     private String folderPath;
     private String description;
     private String playlist;
+    private String bilibiliCategory;
     private List<String> hashtags;
 }

@@ -23,7 +23,8 @@ import java.util.List;
 @Service
 public class BilibiliService {
 
-    public boolean uploadVideo(String filePath, String title, String description, List<String> hashtags,
+    public boolean uploadVideo(String filePath, String title, String description, String category,
+            List<String> hashtags,
             boolean keepOpenOnFailure) {
         String simplifiedTitle = (title);
 
@@ -38,8 +39,7 @@ public class BilibiliService {
             waitForUploadComplete(driver);
             setTitle(driver, simplifiedTitle);
             setDescription(driver, finalDescription);
-            setDescription(driver, finalDescription);
-            selectCategory(driver);
+            selectCategory(driver, category);
             setTags(driver, hashtags);
             clickSubmit(driver);
             waitForSuccess(driver);
@@ -266,7 +266,10 @@ public class BilibiliService {
         }
     }
 
-    private void selectCategory(WebDriver driver) {
+    private void selectCategory(WebDriver driver, String category) {
+        if (category == null || category.isEmpty()) {
+            category = "游戏"; // Default category
+        }
         try {
             String stepName = "選擇分區";
             // Locate the dropdown using the user's provided class hint, or general class
@@ -285,34 +288,31 @@ public class BilibiliService {
             // Wait for options to appear
             Thread.sleep(1000);
 
-            // Select "Game" (游戏)
-            // Looking for an element with text "游戏" that is selectable
-            By gameOptionSelector = By
-                    .xpath("//*[contains(text(), '游戏') and not(contains(@class, 'select-item-cont'))]");
-            // Note: The user showed 'select-item-cont' is the selected text.
-            // In the dropdown list, it might be different. usually it's a list item.
-            // Let's try a broader search for clickable "游戏" text in the dropdown container.
-
-            // Refined selector for the dropdown option:
+            // Select specified category
+            // Looking for an element with the given category text that is selectable
+            String targetCategory = ZhConverterUtil.toSimple(category);
             By optionSelector = By.xpath(
-                    "//div[contains(@class, 'drop-main')]//span[contains(text(), '游戏')] | //div[contains(@class, 'drop-main')]//div[contains(text(), '游戏')]");
-            // Fallback to simple text search if class names are dynamic
-            By simpleOptionSelector = By.xpath("//*[text()='游戏']");
+                    "//div[contains(@class, 'drop-main')]//span[contains(text(), '" + targetCategory
+                            + "')] | //div[contains(@class, 'drop-main')]//div[contains(text(), '" + targetCategory
+                            + "')]");
+            // Fallback to simple text search
+            By simpleOptionSelector = By.xpath("//*[text()='" + targetCategory + "']");
 
-            WebElement gameOption = null;
+            WebElement targetOption = null;
             try {
-                gameOption = findClickableElement(driver, stepName, simpleOptionSelector, "遊戲選項");
+                targetOption = findClickableElement(driver, stepName, optionSelector, targetCategory + " 選項");
             } catch (Exception e) {
-                // Try looking specifically inside the dropdown list container if possible, but
-                // global text usually works for unique items like this
-                log.warn("Direct '游戏' text not found, trying alternative selectors...");
+                log.warn("Refined selector for '{}' not found, trying simple text search...", targetCategory);
+                try {
+                    targetOption = findClickableElement(driver, stepName, simpleOptionSelector, targetCategory + " 選項");
+                } catch (Exception ex) {
+                    log.error("Could not find '{}' option.", targetCategory);
+                }
             }
 
-            if (gameOption != null) {
-                gameOption.click();
-                log.info("Category 'Game' selected.");
-            } else {
-                log.error("Could not find '游戏' option.");
+            if (targetOption != null) {
+                targetOption.click();
+                log.info("Category '{}' selected.", targetCategory);
             }
 
             Thread.sleep(500);

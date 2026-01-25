@@ -8,5 +8,6 @@ public class MultiPlatformVideoUploadRequest {
     private String filePath;
     private String description;
     private String playlist;
+    private String bilibiliCategory;
     private List<String> hashtags;
 }

@@ -8,6 +8,6 @@ import java.util.List;
 public class BilibiliVideoUploadRequest {
     private String filePath;
     private String description;
-    private String visibility;
+    private String category;
     private List<String> hashtags;
 }

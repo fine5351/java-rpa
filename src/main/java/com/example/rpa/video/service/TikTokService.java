@@ -307,7 +307,7 @@ public class TikTokService {
             try {
                 By successSelector = By.xpath(
                         "//div[contains(text(), 'Manage your posts') or contains(text(), 'View profile') or contains(text(), 'Upload another video') or contains(text(), '上傳另一支影片')]");
-                new WebDriverWait(driver, Duration.ofSeconds(30))
+                new WebDriverWait(driver, Duration.ofSeconds(10))
                         .until(ExpectedConditions.presenceOfElementLocated(successSelector));
                 log.info("Post success indicator found.");
             } catch (Exception e) {

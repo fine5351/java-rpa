@@ -108,6 +108,7 @@ public class VideoController {
                         request.getFilePath(),
                         getFileNameWithoutExtension(request.getFilePath()),
                         request.getDescription(),
+                        request.getCategory(),
                         request.getHashtags(),
                         true);
             } catch (Exception e) {
@@ -126,6 +127,7 @@ public class VideoController {
                     request.getFilePath(),
                     request.getDescription(),
                     request.getPlaylist(),
+                    request.getBilibiliCategory(),
                     request.getHashtags());
         }).start();
 
@@ -153,6 +155,7 @@ public class VideoController {
                                 file.getAbsolutePath(),
                                 request.getDescription(),
                                 request.getPlaylist(),
+                                request.getBilibiliCategory(),
                                 request.getHashtags());
                     }
                 }
@@ -163,7 +166,7 @@ public class VideoController {
     }
 
     private void processMultiPlatformUpload(String filePath, String description, String playlist,
-            List<String> hashtags) {
+            String bilibiliCategory, List<String> hashtags) {
         try {
             String title = getFileNameWithoutExtension(filePath);
 
@@ -193,6 +196,7 @@ public class VideoController {
                     filePath,
                     title,
                     description,
+                    bilibiliCategory,
                     hashtags,
                     false);
 
