@@ -292,9 +292,9 @@ public class BilibiliService {
             // Looking for an element with the given category text that is selectable
             String targetCategory = ZhConverterUtil.toSimple(category);
             By optionSelector = By.xpath(
-                    "//div[contains(@class, 'drop-main')]//span[contains(text(), '" + targetCategory
-                            + "')] | //div[contains(@class, 'drop-main')]//div[contains(text(), '" + targetCategory
-                            + "')]");
+                    "//div[contains(@class, 'drop-list-v2-item') and @title='" + targetCategory + "']" +
+                            " | //div[contains(@class, 'drop-list-v2-item')]//p[contains(@class, 'item-cont-main') and contains(text(), '"
+                            + targetCategory + "')]");
             // Fallback to simple text search
             By simpleOptionSelector = By.xpath("//*[text()='" + targetCategory + "']");
 

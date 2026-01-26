@@ -6,5 +6,6 @@ Content-Type: application/json
   "folderPath": "F:\\Quicksand",
   "description": "loop~",
   "playlist": "Quicksand Shorts",
+  "bilibiliCategory": "动画",
   "hashtags": ["quicksand","acrylic","shorts"]
 }
