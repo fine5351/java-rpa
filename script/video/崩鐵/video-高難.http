@@ -3,8 +3,8 @@ POST http://localhost:8080/api/multi/upload/folder
 Content-Type: application/json
 
 {
-  "folderPath": "F:\\OBS-VideoRecord\\2026-01-20-混沌回憶-堤潰蟻穴",
+  "folderPath": "F:\\2026-02-02-末日幻影-支配溟茫",
   "description": "練度展示於結尾\r\n",
   "playlist": "崩壞:星穹鐵道-高難",
-  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "堤潰蟻穴"]
+  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "支配溟茫"]
 }

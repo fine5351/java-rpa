@@ -126,7 +126,8 @@ public class XiaohongshuService {
 
                 if (!isUploading) {
                     List<WebElement> successElements = driver.findElements(
-                            By.xpath("//*[contains(text(), '上传成功') or contains(text(), 'Upload success')]"));
+                            By.xpath(
+                                    "//*[contains(text(), '上传成功') or contains(text(), 'Upload success') or contains(text(), '检测为高清视频')]"));
                     if (!successElements.isEmpty()) {
                         log.info("Upload complete.");
                         break;
@@ -175,8 +176,8 @@ public class XiaohongshuService {
                 Thread.sleep(2000);
                 if (part.startsWith("#")) {
                     try {
-                        By suggestionSelector = By
-                                .xpath("/html/body/div[16]/div/div[1]/div/div/div[1]");
+                        By suggestionSelector = By.xpath(
+                                "//div[contains(@class, 'item') and .//span[contains(@class, 'name')] and .//span[contains(@class, 'num')]]");
                         List<WebElement> suggestions = new WebDriverWait(driver, Duration.ofSeconds(5))
                                 .until(ExpectedConditions.presenceOfAllElementsLocatedBy(suggestionSelector));
 
@@ -268,7 +269,7 @@ public class XiaohongshuService {
 
     private void clickPublish(WebDriver driver) {
         String stepName = "點擊發佈按鈕";
-        By selector = By.cssSelector("button.publishBtn");
+        By selector = By.xpath("//button[contains(@class, 'bg-red') and contains(., '发布')]");
 
         while (true) {
             try {
