@@ -3,7 +3,7 @@ POST http://localhost:8080/api/multi/upload/folder
 Content-Type: application/json
 
 {
-  "folderPath": "F:\\2025-02-01-幻想真境劇詩",
+  "folderPath": "F:\\未上傳\\2026-02-16-深境螺旋",
   "description": "練度展示於結尾\r\n",
   "playlist": "原神-高難",
   "hashtags": ["原神", "genshinimpact"]

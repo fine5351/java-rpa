@@ -88,7 +88,24 @@ public class XiaohongshuService {
         options.addArguments("--disable-blink-features=AutomationControlled");
         options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
         options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--remote-allow-origins=*");
-        return new ChromeDriver(options);
+        try {
+            return new ChromeDriver(options);
+        } catch (org.openqa.selenium.SessionNotCreatedException e) {
+            log.warn("Chrome Driver start failed. Attempting to kill locked Chrome instance...", e);
+            try {
+                Runtime.getRuntime().exec(new String[] { "cmd", "/c",
+                        "wmic process where \"name='chrome.exe' and commandline like '%chrome-data%'\" call terminate" })
+                        .waitFor();
+                java.io.File lockFile = new java.io.File("d:/work/workspace/java/rpa/chrome-data/SingletonLock");
+                if (lockFile.exists()) {
+                    lockFile.delete();
+                }
+                Thread.sleep(2000);
+            } catch (Exception ex) {
+                log.error("Failed to cleanup locked Chrome profile", ex);
+            }
+            return new ChromeDriver(options);
+        }
     }
 
     private void navigateToCreatorStudio(WebDriver driver) {
