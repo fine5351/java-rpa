@@ -1,0 +1,21 @@
+### all-劇情
+POST http://localhost:8080/api/multi/upload/folder
+Content-Type: application/json
+
+{
+  "folderPath": "F:\\未上傳\\崩壞星穹鐵道-4.0-滿月是神不在的時間",
+  "description": "劇情\r\n",
+  "playlist": "崩壞:星穹鐵道",
+  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "滿月是神不在的時間"]
+}
+
+### all-高難
+POST http://localhost:8080/api/multi/upload/folder
+Content-Type: application/json
+
+{
+  "folderPath": "F:\\未上傳\\2026-02-16-虛構敘事-無字小說",
+  "description": "練度展示於結尾\r\n",
+  "playlist": "崩壞:星穹鐵道-高難",
+  "hashtags": ["崩壞星穹鐵道", "HonkaiStarRail", "無字小說"]
+}

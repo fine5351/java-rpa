@@ -1,0 +1,21 @@
+### all-劇情
+POST http://localhost:8080/api/multi/upload/folder
+Content-Type: application/json
+
+{
+  "folderPath": "F:\\未上傳\\白馬閒遊記",
+  "description": "劇情\r\n",
+  "playlist": "原神",
+  "hashtags": ["原神", "genshinimpact", "月之四", "白馬閒遊記", "茲白"]
+}
+
+### all-高難
+POST http://localhost:8080/api/multi/upload/folder
+Content-Type: application/json
+
+{
+  "folderPath": "F:\\未上傳\\2026-02-16-深境螺旋",
+  "description": "練度展示於結尾\r\n",
+  "playlist": "原神-高難",
+  "hashtags": ["原神", "genshinimpact"]
+}
